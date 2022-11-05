@@ -55,3 +55,17 @@ export function uuid() {
 
   return uuid.join('');
 }
+
+export function getUnique(arr: Array<any>, key: string) {
+  return (
+    arr
+      .map((e) => e[key])
+
+      // store the keys of the unique objects
+      .map((e, i, final) => final.indexOf(e) === i && i)
+
+      // eliminate the dead keys & store unique objects
+      .filter((e) => arr[e as number])
+      .map((e) => arr[e as number])
+  );
+}

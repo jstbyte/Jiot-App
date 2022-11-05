@@ -1,11 +1,14 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { createStyles, Title, TextInput, Button } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { useLocalStorage } from '@mantine/hooks';
 import { MdLink, MdLock, MdSave, MdSearch, MdDelete } from 'react-icons/md';
 import { Screen } from '@/components/AppShell';
 import { useMqttHelper } from '@/lib/mqtt';
+import { flushSync } from 'react-dom';
+import { getUnique } from '@/lib/utils';
 
+export type DevInfo = { id: string; mac: string; digioutCount: number };
 export type DigiOut = { name: string; synced: boolean; state: boolean };
 
 export interface Device {
@@ -39,6 +42,7 @@ export const useSettings = () => {
 export default function Settings() {
   const { classes } = useStyles();
   const [settings, setSettings] = useSettings();
+  const devInfoRef = useRef<Device[]>([]);
 
   const form = useForm<SettingsType>({
     initialValues: {
@@ -50,41 +54,32 @@ export default function Settings() {
   });
 
   const mqtt = useMqttHelper(
-    `${form.values.mqttPrefix}/res/devinfo`,
-    (topic: string, payload: any) => {
-      const data = JSON.parse(payload.toString());
-      const device: Device = {
-        id: data.id.toString(),
-        name: data.id.toString(),
-        synced: false,
-        digiouts: [],
-      };
-      for (let i = 0; i < data.digiout; i++) {
-        device.digiouts.push({
-          name: `Switch ${i}`,
+    `${form.values.mqttPrefix}/res/devinfo/+`,
+    (topic, payload) => {
+      const regEx = /^[\s\S]*\/res\/devinfo\/([0-9]*)$/;
+      const match = topic.match(regEx);
+
+      if (match?.length == 2) {
+        const data = JSON.parse(payload.toString()) as DevInfo;
+        const device: Device = {
+          id: data.id.toString(),
+          name: data.mac,
           synced: false,
-          state: false,
-        });
-      }
+          digiouts: [...Array(data.digioutCount)].map(
+            (_, i): DigiOut => ({
+              state: false,
+              synced: false,
+              name: `Switch ${i}`,
+            })
+          ),
+        };
 
-      // Disable Loading  State.
-      form.setFieldValue('ready', true);
-
-      let hasDevice = false;
-      const devices = form.values.devices.map((d) => {
-        if (d.id == data.id) {
-          hasDevice = true;
-          if (d.digiouts.length != data.digiout) {
-            return device;
-          }
-        }
-        return d;
-      });
-
-      if (hasDevice) {
-        form.setFieldValue('devices', devices);
-      } else {
-        form.insertListItem('devices', device);
+        devInfoRef.current.push(device);
+        form.setFieldValue('ready', true);
+        form.setFieldValue(
+          'devices',
+          getUnique([...form.values.devices, ...devInfoRef.current], 'id')
+        );
       }
     }
   );
@@ -97,6 +92,8 @@ export default function Settings() {
   );
 
   const handleFindOrClear = () => {
+    devInfoRef.current = [];
+
     if (isClearable) {
       form.setFieldValue('ready', true);
       form.setFieldValue('devices', []);
