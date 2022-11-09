@@ -8,9 +8,9 @@ export const useStore = () => {
   const [devs, setDevs] = useState<Device[]>([]);
 
   const mqtt = useMqttHelper(
-    `${settings.mqttPrefix}/res/digiout/+`,
+    `${settings.mqttPrefix}/res/sonoff/+`,
     (topic, payload) => {
-      const regEx = /^[\s\S]*\/res\/digiout\/([0-9]*)$/;
+      const regEx = /^[\s\S]*\/res\/sonoff\/([0-9]*)$/;
       const match = topic.match(regEx);
 
       if (match?.length == 2) {
@@ -38,7 +38,7 @@ export const useStore = () => {
   const syncData = () => {
     if (!mqtt.connected) return;
     settings.devices.forEach((dev) => {
-      mqtt.client?.publish(`${settings.mqttPrefix}/req/digiout/${dev.id}`, '0');
+      mqtt.client?.publish(`${settings.mqttPrefix}/req/sonoff/${dev.id}`, '0');
     });
   };
 
@@ -57,7 +57,7 @@ export const useStore = () => {
       });
 
       mqtt.client.publish(
-        `${settings.mqttPrefix}/req/digiout/${devs[devIndex].id}`,
+        `${settings.mqttPrefix}/req/sonoff/${devs[devIndex].id}`,
         `${digIndex}:2`
       );
     }

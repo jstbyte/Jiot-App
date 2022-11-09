@@ -5,10 +5,14 @@ import { useLocalStorage } from '@mantine/hooks';
 import { MdLink, MdLock, MdSave, MdSearch, MdDelete } from 'react-icons/md';
 import { Screen } from '@/components/AppShell';
 import { useMqttHelper } from '@/lib/mqtt';
-import { flushSync } from 'react-dom';
 import { getUnique } from '@/lib/utils';
 
-export type DevInfo = { id: string; mac: string; digioutCount: number };
+export type DevInfo = {
+  dev: string;
+  uid: string;
+  mac: string;
+  pin: number;
+};
 export type DigiOut = { name: string; synced: boolean; state: boolean };
 
 export interface Device {
@@ -62,10 +66,10 @@ export default function Settings() {
       if (match?.length == 2) {
         const data = JSON.parse(payload.toString()) as DevInfo;
         const device: Device = {
-          id: data.id.toString(),
+          id: data.uid.toString(),
           name: data.mac,
           synced: false,
-          digiouts: [...Array(data.digioutCount)].map(
+          digiouts: [...Array(data.pin)].map(
             (_, i): DigiOut => ({
               state: false,
               synced: false,
