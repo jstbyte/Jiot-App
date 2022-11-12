@@ -9,11 +9,11 @@ interface Props {
   primaryColor: string;
 }
 
-export default function DigioutView({ store, devIndex, primaryColor }: Props) {
+export default function SonoffView({ store, devIndex, primaryColor }: Props) {
   const { classes, theme } = useStyles();
   return (
     <Accordion.Panel>
-      {store.devs[devIndex].digiouts.map((digiout, digIndex) => (
+      {store.devs[devIndex].services.sonoff?.map((digiout, digIndex) => (
         <div className={classes.button} key={digiout.name + devIndex}>
           <MdElectricalServices
             size={theme.spacing.xl * 1.1}

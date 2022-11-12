@@ -1,15 +1,9 @@
-import {
-  createStyles,
-  Title,
-  Image,
-  LoadingOverlay,
-  Loader,
-} from '@mantine/core';
-import { useStore } from '../eswitch/store';
+import { createStyles, Title, Image, Loader } from '@mantine/core';
+import { useStore } from './store';
 import { Screen } from '@/components/AppShell';
 import DeviceView from './DeviceView';
 
-export default function ESwitch() {
+export default function Services() {
   const { classes, theme } = useStyles();
   const store = useStore();
 

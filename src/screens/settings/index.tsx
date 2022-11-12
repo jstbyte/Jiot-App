@@ -7,19 +7,22 @@ import { Screen } from '@/components/AppShell';
 import { useMqttHelper } from '@/lib/mqtt';
 import { getUnique } from '@/lib/utils';
 
-export type DevInfo = {
-  dev: string;
-  uid: string;
+export type Sonoff = { name: string; synced: boolean; state: boolean };
+export type Services = { sonoff?: Sonoff[]; door?: number };
+
+/* Service Defination From Device Find */
+interface DevInfo {
+  uid: number;
   mac: string;
-  pin: number;
-};
-export type DigiOut = { name: string; synced: boolean; state: boolean };
+  services: { name: string; data: any }[];
+}
 
 export interface Device {
-  id: string;
-  name: String;
+  uid: string;
+  mac: string;
+  name: string;
   synced: boolean;
-  digiouts: DigiOut[];
+  services: Services;
 }
 
 export interface SettingsType {
@@ -64,25 +67,33 @@ export default function Settings() {
       const match = topic.match(regEx);
 
       if (match?.length == 2) {
-        const data = JSON.parse(payload.toString()) as DevInfo;
-        const device: Device = {
-          id: data.uid.toString(),
-          name: data.mac,
-          synced: false,
-          digiouts: [...Array(data.pin)].map(
-            (_, i): DigiOut => ({
-              state: false,
-              synced: false,
-              name: `Switch ${i}`,
-            })
-          ),
-        };
+        let services: Services = {}; /* Store All Services */
+        const device = JSON.parse(payload.toString()) as DevInfo;
+        device.services.forEach((service) => {
+          if (service.name == 'sonoff') {
+            services[service.name] = [...Array(service.data as number)].map(
+              (_, i) => ({
+                state: false,
+                synced: false,
+                name: `Switch ${i}`,
+              })
+            );
+          }
+          /* Handle Other Service Case */
+        });
 
-        devInfoRef.current.push(device);
+        devInfoRef.current.push({
+          uid: device.uid.toString(),
+          name: device.mac,
+          mac: device.mac,
+          synced: false,
+          services,
+        });
+
         form.setFieldValue('ready', true);
         form.setFieldValue(
           'devices',
-          getUnique([...form.values.devices, ...devInfoRef.current], 'id')
+          getUnique([...form.values.devices, ...devInfoRef.current], 'uid')
         );
       }
     }
@@ -172,17 +183,19 @@ export default function Settings() {
         </div>
 
         {form.values.devices.map((dev, i) => (
-          <div key={dev.id} className={classes.deviceContainer}>
+          <div key={dev.uid} className={classes.deviceContainer}>
             <TextInput
               variant='filled'
               label='Device Name'
               {...form.getInputProps(`devices.${i}.name`)}
             />
             <div className={classes.digioutNamesContainer}>
-              {dev.digiouts.map((_, ii) => (
+              {dev.services.sonoff?.map((_, ii) => (
                 <TextInput
                   key={ii}
-                  {...form.getInputProps(`devices.${i}.digiouts.${ii}.name`)}
+                  {...form.getInputProps(
+                    `devices.${i}.services.sonoff.${ii}.name`
+                  )}
                 />
               ))}
             </div>

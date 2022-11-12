@@ -5,13 +5,13 @@ import { NavLink } from './components/NavLink';
 import { Route } from './components/Router';
 import { MqttProvider } from './lib/mqtt';
 import Settings from './screens/settings';
-import ESwitch from '@/screens/eswitch';
+import Services from '@/screens/services';
 
 export default function App() {
   return (
     <MqttProvider>
       <Body>
-        <Route path='/' component={<ESwitch />} />
+        <Route path='/' component={<Services />} />
         <Route path='/settings' component={<Settings />} />
       </Body>
 

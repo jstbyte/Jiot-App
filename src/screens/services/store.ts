@@ -1,7 +1,7 @@
 import { useRouter } from '@/components/Router';
 import { useMqttHelper } from '@/lib/mqtt';
 import { useEffect, useState } from 'react';
-import { useSettings, Device, DigiOut } from '../settings';
+import { useSettings, Device, Services, Sonoff } from '../settings';
 
 export const useStore = () => {
   const [settings] = useSettings();
@@ -14,11 +14,12 @@ export const useStore = () => {
       const match = topic.match(regEx);
 
       if (match?.length == 2) {
+        /* MQTT Message From sonoff Service */
         const data = JSON.parse(payload.toString()) as any;
         setDevs((devs) =>
           devs.map((dev) => {
-            if (dev.id == match[1] && dev.digiouts.length == data.length) {
-              const pins = dev.digiouts.map((pin, i) => {
+            if (dev.uid == match[1]) {
+              const pins = (dev.services as Services).sonoff?.map((pin, i) => {
                 // if (pin.synced) return pin;
                 return {
                   ...pin,
@@ -26,7 +27,11 @@ export const useStore = () => {
                   state: !data[i],
                 };
               });
-              return { ...dev, synced: true, digiouts: pins };
+              return {
+                ...dev,
+                synced: true,
+                services: { ...dev.services, sonoff: pins },
+              };
             }
             return dev;
           })
@@ -38,7 +43,7 @@ export const useStore = () => {
   const syncData = () => {
     if (!mqtt.connected) return;
     settings.devices.forEach((dev) => {
-      mqtt.client?.publish(`${settings.mqttPrefix}/req/sonoff/${dev.id}`, '0');
+      mqtt.client?.publish(`${settings.mqttPrefix}/req/sonoff/${dev.uid}`, '0');
     });
   };
 
@@ -51,13 +56,15 @@ export const useStore = () => {
       setDevs((state) => {
         const newState = [...state];
         newState[devIndex].synced = false;
-        newState[devIndex].digiouts[digIndex].synced = false;
-        newState[devIndex].digiouts[digIndex].state = !curState;
+        // @ts-ignore
+        newState[devIndex].services.sonoff[digIndex].synced = false;
+        // @ts-ignore
+        newState[devIndex].services.sonoff[digIndex].state = !curState;
         return newState;
       });
 
       mqtt.client.publish(
-        `${settings.mqttPrefix}/req/sonoff/${devs[devIndex].id}`,
+        `${settings.mqttPrefix}/req/sonoff/${devs[devIndex].uid}`,
         `${digIndex}:2`
       );
     }

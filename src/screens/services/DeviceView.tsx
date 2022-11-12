@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { Accordion, Loader, Title, useMantineTheme } from '@mantine/core';
 import { IoIosCloudDone } from 'react-icons/io';
-import DigioutView from './DigioutView';
+import SonoffView from './SonoffView';
 import { Store } from './store';
 
 type Props = { store: Store };
@@ -15,9 +15,9 @@ export default function DeviceView({ store }: Props) {
     [theme]
   );
   return (
-    <Accordion defaultValue={store.devs[0].id}>
+    <Accordion defaultValue={store.devs[0].uid}>
       {store.devs.map((dev, devIndex) => (
-        <Accordion.Item key={dev.id} value={dev.id}>
+        <Accordion.Item key={dev.uid} value={dev.uid}>
           <Accordion.Control
             icon={
               dev.synced ? (
@@ -33,7 +33,7 @@ export default function DeviceView({ store }: Props) {
               {dev.name}
             </Title>
           </Accordion.Control>
-          <DigioutView {...{ store, devIndex, primaryColor }} />
+          <SonoffView {...{ store, devIndex, primaryColor }} />
         </Accordion.Item>
       ))}
     </Accordion>
