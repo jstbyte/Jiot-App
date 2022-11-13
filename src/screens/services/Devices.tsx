@@ -1,11 +1,12 @@
 import { useMemo } from 'react';
 import { Accordion, Loader, Title, useMantineTheme } from '@mantine/core';
 import { IoIosCloudDone } from 'react-icons/io';
-import SonoffView from './SonoffView';
+import SonoffView from './Sonoff';
 import { Store } from './store';
+import Door from './Door';
 
 type Props = { store: Store };
-export default function DeviceView({ store }: Props) {
+export default function Devices({ store }: Props) {
   const theme = useMantineTheme();
   const primaryColor = useMemo(
     () =>
@@ -33,7 +34,10 @@ export default function DeviceView({ store }: Props) {
               {dev.name}
             </Title>
           </Accordion.Control>
-          <SonoffView {...{ store, devIndex, primaryColor }} />
+          {dev.services.sonoff && (
+            <SonoffView {...{ store, devIndex, primaryColor }} />
+          )}
+          {dev.services.door && <Door {...{ store, devIndex, primaryColor }} />}
         </Accordion.Item>
       ))}
     </Accordion>

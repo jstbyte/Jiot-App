@@ -9,7 +9,7 @@ interface Props {
   primaryColor: string;
 }
 
-export default function SonoffView({ store, devIndex, primaryColor }: Props) {
+export default function Sonoff({ store, devIndex, primaryColor }: Props) {
   const { classes, theme } = useStyles();
   return (
     <Accordion.Panel>

@@ -3,12 +3,15 @@ import { createStyles, Title, TextInput, Button } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { useLocalStorage } from '@mantine/hooks';
 import { MdLink, MdLock, MdSave, MdSearch, MdDelete } from 'react-icons/md';
+import { BsDoorOpenFill } from 'react-icons/bs';
+import { ImSwitch } from 'react-icons/im';
 import { Screen } from '@/components/AppShell';
 import { useMqttHelper } from '@/lib/mqtt';
 import { getUnique } from '@/lib/utils';
 
-export type Sonoff = { name: string; synced: boolean; state: boolean };
-export type Services = { sonoff?: Sonoff[]; door?: number };
+export type SonoffService = { name: string; synced: boolean; state: boolean };
+export type DoorService = { name: string; synced: boolean; state: number };
+export type Services = { sonoff?: SonoffService[]; door?: DoorService };
 
 /* Service Defination From Device Find */
 interface DevInfo {
@@ -78,8 +81,14 @@ export default function Settings() {
                 name: `Switch ${i}`,
               })
             );
+            return;
           }
+
           /* Handle Other Service Case */
+          if (service.name == 'door') {
+            services.door = { name: 'Door Name', synced: false, state: 255 };
+            return;
+          }
         });
 
         devInfoRef.current.push({
@@ -193,12 +202,21 @@ export default function Settings() {
               {dev.services.sonoff?.map((_, ii) => (
                 <TextInput
                   key={ii}
+                  icon={<ImSwitch />}
                   {...form.getInputProps(
                     `devices.${i}.services.sonoff.${ii}.name`
                   )}
                 />
               ))}
             </div>
+            {dev.services.door && (
+              <div>
+                <TextInput
+                  icon={<BsDoorOpenFill />}
+                  {...form.getInputProps(`devices.${i}.services.door.name`)}
+                />
+              </div>
+            )}
           </div>
         ))}
       </Screen>

@@ -1,7 +1,7 @@
 import { createStyles, Title, Image, Loader } from '@mantine/core';
 import { useStore } from './store';
 import { Screen } from '@/components/AppShell';
-import DeviceView from './DeviceView';
+import Devices from './Devices';
 
 export default function Services() {
   const { classes, theme } = useStyles();
@@ -16,7 +16,7 @@ export default function Services() {
         </Title>
       </div>
       {store.devs.length > 0 ? (
-        <DeviceView store={store} />
+        <Devices store={store} />
       ) : (
         <div className={classes.loaderContainer}>
           <Loader size={128} variant='bars' />
