@@ -63,9 +63,9 @@ export default function Door({ store, devIndex, primaryColor }: Props) {
             </Button>
             <Button
               onClick={() => store.doorAction(devIndex, 255)}
-              leftIcon={door.state ? <MdLock /> : <MdVpnKey />}
+              leftIcon={door.state ? <MdVpnKey /> : <MdLock />}
               className='item'>
-              {door.state ? 'Lock Door' : 'Open Door'}
+              {door.state ? 'Open Door' : 'Lock Door'}
             </Button>
           </div>
         )}
