@@ -14,6 +14,7 @@ import { ImSwitch } from 'react-icons/im';
 import { Screen } from '@/components/AppShell';
 import { useMqttHelper } from '@/lib/mqtt';
 import { getUnique } from '@/lib/utils';
+import { motion } from 'framer-motion';
 
 export type SonoffService = { name: string; synced: boolean; state: boolean };
 export type DoorService = { name: string; synced: boolean; state: number };
@@ -203,9 +204,13 @@ export default function Settings() {
             Save Devices
           </Button>
         </div>
-
         {form.values.devices.map((dev, i) => (
-          <div key={dev.uid} className={classes.deviceContainer}>
+          <motion.div
+            initial={{ opacity: 0, scaleY: 0.5, translateY: 100 }}
+            animate={{ opacity: 1, scaleY: 1, translateY: 0 }}
+            className={classes.deviceContainer}
+            transition={{ delay: i * 0.075 }}
+            key={dev.uid}>
             <TextInput
               variant='filled'
               className='dname'
@@ -238,7 +243,7 @@ export default function Settings() {
                 />
               </div>
             )}
-          </div>
+          </motion.div>
         ))}
       </Screen>
     </form>
