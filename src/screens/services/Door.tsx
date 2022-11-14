@@ -41,12 +41,14 @@ export default function Door({ store, devIndex, primaryColor }: Props) {
           <div className={classes.buttonContainer}>
             <Button
               onClick={() => store.doorAction(devIndex, 0)}
+              disabled={!door.synced}
               leftIcon={<MdVpnKey />}
               className='item'>
               Open Door
             </Button>
             <Button
               onClick={() => store.doorAction(devIndex, 1)}
+              disabled={!door.synced}
               leftIcon={<MdLock />}
               className='item'>
               Lock Door

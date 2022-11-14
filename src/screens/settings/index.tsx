@@ -1,5 +1,11 @@
 import { useEffect, useMemo, useRef } from 'react';
-import { createStyles, Title, TextInput, Button } from '@mantine/core';
+import {
+  createStyles,
+  Title,
+  TextInput,
+  Button,
+  CloseButton,
+} from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { useLocalStorage } from '@mantine/hooks';
 import { MdLink, MdLock, MdSave, MdSearch, MdDelete } from 'react-icons/md';
@@ -115,6 +121,13 @@ export default function Settings() {
     [form.values.devices, form.values.mqttPrefix]
   );
 
+  const removeDevByIndex = (uid: string) => () => {
+    form.setFieldValue(
+      'devices',
+      form.values.devices.filter((dev) => dev.uid != uid)
+    );
+  };
+
   const handleFindOrClear = () => {
     devInfoRef.current = [];
 
@@ -195,7 +208,15 @@ export default function Settings() {
           <div key={dev.uid} className={classes.deviceContainer}>
             <TextInput
               variant='filled'
+              className='dname'
               label='Device Name'
+              rightSection={
+                <CloseButton
+                  color='red'
+                  variant='subtle'
+                  onClick={removeDevByIndex(dev.uid)}
+                />
+              }
               {...form.getInputProps(`devices.${i}.name`)}
             />
             <div className={classes.digioutNamesContainer}>
