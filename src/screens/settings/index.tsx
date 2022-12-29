@@ -22,13 +22,12 @@ export type Services = { sonoff?: SonoffService[]; door?: DoorService };
 
 /* Service Defination From Device Find */
 interface DevInfo {
-  uid: number;
   mac: string;
+  name: string;
   services: { name: string; data: any }[];
 }
 
 export interface Device {
-  uid: string;
   mac: string;
   name: string;
   synced: boolean;
@@ -73,7 +72,7 @@ export default function Settings() {
   const mqtt = useMqttHelper(
     `${form.values.mqttPrefix}/res/devinfo/+`,
     (topic, payload) => {
-      const regEx = /^[\s\S]*\/res\/devinfo\/([0-9]*)$/;
+      const regEx = /^[\s\S]*\/res\/devinfo\/([a-zA-Z0-9._]{3,10})$/;
       const match = topic.match(regEx);
 
       if (match?.length == 2) {
@@ -99,8 +98,7 @@ export default function Settings() {
         });
 
         devInfoRef.current.push({
-          uid: device.uid.toString(),
-          name: device.mac,
+          name: device.name,
           mac: device.mac,
           synced: false,
           services,
@@ -109,7 +107,7 @@ export default function Settings() {
         form.setFieldValue('ready', true);
         form.setFieldValue(
           'devices',
-          getUnique([...form.values.devices, ...devInfoRef.current], 'uid')
+          getUnique([...form.values.devices, ...devInfoRef.current], 'name')
         );
       }
     }
@@ -122,10 +120,10 @@ export default function Settings() {
     [form.values.devices, form.values.mqttPrefix]
   );
 
-  const removeDevByIndex = (uid: string) => () => {
+  const removeDevByIndex = (name: string) => () => {
     form.setFieldValue(
       'devices',
-      form.values.devices.filter((dev) => dev.uid != uid)
+      form.values.devices.filter((dev) => dev.name != name)
     );
   };
 
@@ -210,7 +208,7 @@ export default function Settings() {
             animate={{ opacity: 1, scaleY: 1, translateY: 0 }}
             className={classes.deviceContainer}
             transition={{ delay: i * 0.075 }}
-            key={dev.uid}>
+            key={dev.name}>
             <TextInput
               variant='filled'
               className='dname'
@@ -219,7 +217,7 @@ export default function Settings() {
                 <CloseButton
                   color='red'
                   variant='subtle'
-                  onClick={removeDevByIndex(dev.uid)}
+                  onClick={removeDevByIndex(dev.name)}
                 />
               }
               {...form.getInputProps(`devices.${i}.name`)}

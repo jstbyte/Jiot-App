@@ -16,13 +16,13 @@ export const useStore = () => {
   const mqtt = useMqttHelper(
     `${settings.mqttPrefix}/res/#`,
     (topic, payload) => {
-      const regEx = /^[\s\S]*\/res\/[a-zA-Z]*\/([0-9]*)$/;
+      const regEx = /^[\s\S]*\/res\/[a-zA-Z]*\/([a-zA-Z0-9._]{3,10})$/;
       const match = topic.match(regEx);
 
       if (match?.length == 2) {
         setDevs((devs) =>
           devs.map((dev) => {
-            if (dev.uid == match[1]) {
+            if (dev.name == match[1]) {
               if (topic.includes('sonoff')) {
                 const data = JSON.parse(payload.toString()) as any;
                 return {
@@ -66,13 +66,13 @@ export const useStore = () => {
     settings.devices.forEach((dev) => {
       if (dev.services.sonoff) {
         mqtt.client?.publish(
-          `${settings.mqttPrefix}/req/sonoff/${dev.uid}`,
+          `${settings.mqttPrefix}/req/sonoff/${dev.name}`,
           '0'
         );
       }
 
       if (dev.services.door) {
-        mqtt.client?.publish(`${settings.mqttPrefix}/req/door/${dev.uid}`, '');
+        mqtt.client?.publish(`${settings.mqttPrefix}/req/door/${dev.name}`, '');
       }
     });
   };
@@ -94,7 +94,7 @@ export const useStore = () => {
       });
 
       mqtt.client.publish(
-        `${settings.mqttPrefix}/req/sonoff/${devs[devIndex].uid}`,
+        `${settings.mqttPrefix}/req/sonoff/${devs[devIndex].name}`,
         `${digIndex}:2`
       );
     }
@@ -110,7 +110,7 @@ export const useStore = () => {
     });
 
     mqtt.client?.publish(
-      `${settings.mqttPrefix}/req/door/${devs[devIndex].uid}`,
+      `${settings.mqttPrefix}/req/door/${devs[devIndex].name}`,
       `${action}`
     );
   };

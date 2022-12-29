@@ -16,9 +16,9 @@ export default function Devices({ store }: Props) {
     [theme]
   );
   return (
-    <Accordion defaultValue={store.devs[0].uid}>
+    <Accordion defaultValue={store.devs[0].name}>
       {store.devs.map((dev, devIndex) => (
-        <Accordion.Item key={dev.uid} value={dev.uid}>
+        <Accordion.Item key={dev.name} value={dev.name}>
           <Accordion.Control
             icon={
               dev.synced ? (
