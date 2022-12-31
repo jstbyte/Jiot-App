@@ -210,9 +210,11 @@ export default function Settings() {
             transition={{ delay: i * 0.075 }}
             key={dev.name}>
             <TextInput
+              disabled
               variant='filled'
               className='dname'
               label='Device Name'
+              size='md'
               rightSection={
                 <CloseButton
                   color='red'
