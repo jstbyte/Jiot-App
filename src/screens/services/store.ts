@@ -67,7 +67,7 @@ export const useStore = () => {
       if (dev.services.sonoff) {
         mqtt.client?.publish(
           `${settings.mqttPrefix}/req/sonoff/${dev.name}`,
-          '0'
+          ''
         );
       }
 
@@ -93,9 +93,15 @@ export const useStore = () => {
         return newState;
       });
 
+      let payloadData = devs[devIndex].services.sonoff?.map((_, i) =>
+        i == digIndex ? 2 + 1 : 0
+      );
+
+      console.log(payloadData);
+
       mqtt.client.publish(
         `${settings.mqttPrefix}/req/sonoff/${devs[devIndex].name}`,
-        `${digIndex}:2`
+        JSON.stringify(payloadData)
       );
     }
   };
