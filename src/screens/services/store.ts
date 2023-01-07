@@ -30,7 +30,7 @@ export const useStore = () => {
                   if (csd) {
                     sonoffMod[parseInt(csd[1])].synced = true;
                     sonoffMod[parseInt(csd[1])].state =
-                      csd[2] == '0' ? false : true;
+                      csd[2] == '0' ? true : false; // Inverted logic for relay;
                   }
                 });
 

@@ -166,6 +166,7 @@ export default function Settings() {
           {...form.getInputProps('mqttUrl')}
         />
         <TextInput
+          type='password'
           label='Secrat Key'
           icon={<MdLock />}
           required
