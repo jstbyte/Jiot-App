@@ -18,23 +18,29 @@ export const useStore = () => {
     (topic, payload) => {
       const regEx = /^[\s\S]*\/res\/[a-zA-Z]*\/([a-zA-Z0-9._]{3,10})$/;
       const match = topic.match(regEx);
-
       if (match?.length == 2) {
         setDevs((devs) =>
           devs.map((dev) => {
             if (dev.name == match[1]) {
+              console.log(dev.name);
               if (topic.includes('sonoff')) {
-                const data = JSON.parse(payload.toString()) as any;
+                const sonoffMod = [...(dev.services.sonoff as SonoffService[])];
+                const data = payload.toString().split(';');
+                data.forEach((el) => {
+                  const csd = el.match(/^([0-9]{1,3}):([0-9]{1,3})$/);
+                  if (csd) {
+                    sonoffMod[parseInt(csd[1])].synced = true;
+                    sonoffMod[parseInt(csd[1])].state =
+                      csd[2] == '0' ? false : true;
+                  }
+                });
+
                 return {
                   ...dev,
                   synced: true,
                   services: {
                     ...dev.services,
-                    sonoff: dev.services.sonoff?.map((pin, i) => ({
-                      ...pin,
-                      synced: true,
-                      state: !data[i],
-                    })),
+                    sonoff: sonoffMod,
                   },
                 };
               }
@@ -64,16 +70,10 @@ export const useStore = () => {
   const syncData = () => {
     if (!mqtt.connected) return;
     settings.devices.forEach((dev) => {
-      if (dev.services.sonoff) {
-        mqtt.client?.publish(
-          `${settings.mqttPrefix}/req/sonoff/${dev.name}`,
-          ''
-        );
-      }
-
-      if (dev.services.door) {
-        mqtt.client?.publish(`${settings.mqttPrefix}/req/door/${dev.name}`, '');
-      }
+      mqtt.client?.publish(
+        `${settings.mqttPrefix}/req/devsync/${dev.name}`,
+        ''
+      );
     });
   };
 
@@ -93,15 +93,9 @@ export const useStore = () => {
         return newState;
       });
 
-      let payloadData = devs[devIndex].services.sonoff?.map((_, i) =>
-        i == digIndex ? 2 + 1 : 0
-      );
-
-      console.log(payloadData);
-
       mqtt.client.publish(
         `${settings.mqttPrefix}/req/sonoff/${devs[devIndex].name}`,
-        JSON.stringify(payloadData)
+        `${digIndex}:3`
       );
     }
   };

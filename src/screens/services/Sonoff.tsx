@@ -1,5 +1,5 @@
 import { Accordion, Text, Switch, createStyles } from '@mantine/core';
-import { MdElectricalServices } from 'react-icons/md';
+import { MdElectricalServices, MdError } from 'react-icons/md';
 import { Device } from '../settings';
 import { Store } from './store';
 
@@ -29,7 +29,10 @@ export default function Sonoff({ store, devIndex, primaryColor }: Props) {
             onLabel='ON'
             offLabel='OFF'
             size='lg'
-            disabled={!digiout.synced}
+            thumbIcon={
+              digiout.synced ? null : <MdError size={20} color='red' />
+            }
+            // disabled={!digiout.synced}
             onClick={() => store.setPin(devIndex, digIndex, digiout.state)}
             checked={digiout.state}
           />
