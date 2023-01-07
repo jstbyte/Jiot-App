@@ -20,9 +20,8 @@ export const useStore = () => {
       const match = topic.match(regEx);
       if (match?.length == 2) {
         setDevs((devs) =>
-          devs.map((dev) => {
+          devs.map((dev: Device) => {
             if (dev.name == match[1]) {
-              console.log(dev.name);
               if (topic.includes('sonoff')) {
                 const sonoffMod = [...(dev.services.sonoff as SonoffService[])];
                 const data = payload.toString().split(';');
