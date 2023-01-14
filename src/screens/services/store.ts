@@ -1,13 +1,7 @@
 import { useRouter } from '@/components/Router';
 import { useMqttHelper } from '@/lib/mqtt';
 import { useEffect, useState } from 'react';
-import {
-  useSettings,
-  Device,
-  Services,
-  SonoffService,
-  DoorService,
-} from '../settings';
+import { useSettings, Device, SonoffService, DoorService } from '../settings';
 
 export const useStore = () => {
   const [settings] = useSettings();
@@ -70,8 +64,8 @@ export const useStore = () => {
     if (!mqtt.connected) return;
     settings.devices.forEach((dev) => {
       mqtt.client?.publish(
-        `${settings.mqttPrefix}/req/devsync/${dev.name}`,
-        ''
+        `${settings.mqttPrefix}/req/devinfo/${dev.name}`,
+        'sync'
       );
     });
   };
