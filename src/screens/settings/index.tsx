@@ -70,9 +70,9 @@ export default function Settings() {
   });
 
   const mqtt = useMqttHelper(
-    `${form.values.mqttPrefix}/res/devinfo/+`,
+    `${form.values.mqttPrefix}/+/res/devinfo`,
     (topic, payload) => {
-      const regEx = /^[\s\S]*\/res\/devinfo\/([a-zA-Z0-9._]{3,10})$/;
+      const regEx = /^[\s\S]*\/([a-zA-Z0-9._]{3,10})\/res\/devinfo$/;
       const match = topic.match(regEx);
 
       if (match?.length == 2) {
@@ -89,12 +89,7 @@ export default function Settings() {
             );
             return;
           }
-
           /* Handle Other Service Case */
-          if (service.name == 'door') {
-            services.door = { name: 'Door Name', synced: false, state: 255 };
-            return;
-          }
         });
 
         devInfoRef.current.push({
@@ -138,7 +133,7 @@ export default function Settings() {
 
     if (mqtt.connected) {
       form.setFieldValue('ready', false);
-      mqtt.client?.publish(`${form.values.mqttPrefix}/req/devinfo`, '');
+      mqtt.client?.publish(`${form.values.mqttPrefix}/*/req/devinfo`, '');
     } else {
       form.setFieldValue('ready', true);
       mqtt.connect(`wss://${form.values.mqttUrl}`);
