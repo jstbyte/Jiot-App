@@ -1,11 +1,11 @@
 import { Body, NavBar } from '@/components/AppShell';
-import { MdOutlineFindInPage } from 'react-icons/md';
 import { FcHome, FcSettings } from 'react-icons/fc';
-import { NavLink } from './components/NavLink';
-import { Route } from './components/Router';
-import { MqttProvider } from './lib/mqtt';
-import Settings from './screens/settings';
+import { NavLink } from '@/components/NavLink';
+import { Route } from '@/components/Router';
+import { MqttProvider } from '@/lib/mqtt';
+import Settings from '@/screens/settings';
 import Services from '@/screens/services';
+import Update from '@/screens/update';
 
 export default function App() {
   return (
@@ -13,6 +13,7 @@ export default function App() {
       <Body>
         <Route path='/' component={<Services />} />
         <Route path='/settings' component={<Settings />} />
+        <Route path='/update' component={<Update />} />
       </Body>
 
       <NavBar>

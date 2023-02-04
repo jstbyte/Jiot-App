@@ -131,7 +131,7 @@ export default function Settings() {
       return;
     }
 
-    if (mqtt.connected) {
+    if (mqtt.status == 'connected') {
       form.setFieldValue('ready', false);
       mqtt.client?.publish(`${form.values.mqttPrefix}/*/req/devinfo`, '');
     } else {
@@ -174,18 +174,18 @@ export default function Settings() {
             leftIcon={
               isClearable ? (
                 <MdDelete size={18} />
-              ) : mqtt.connected ? (
+              ) : mqtt.status == 'connected' ? (
                 <MdSearch size={18} />
               ) : (
                 <MdLink size={18} />
               )
             }
-            disabled={mqtt.connected && !form.values.mqttPrefix}
+            disabled={mqtt.status == 'connected' && !form.values.mqttPrefix}
             onClick={handleFindOrClear}
-            loading={mqtt.connected && !form.values.ready}>
+            loading={mqtt.status == 'connected' && !form.values.ready}>
             {isClearable
               ? 'Clear Devices'
-              : mqtt.connected
+              : mqtt.status == 'connected'
               ? 'Find Devices'
               : 'Connect Server'}
           </Button>

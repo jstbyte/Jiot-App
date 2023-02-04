@@ -48,7 +48,7 @@ export const useStore = () => {
   );
 
   const syncData = () => {
-    if (!mqtt.connected) return;
+    if (mqtt.status != 'connected') return;
     settings.devices.forEach((dev) => {
       mqtt.client?.publish(
         `${settings.mqttPrefix}/${dev.name}/req/devinfo`,
@@ -80,10 +80,10 @@ export const useStore = () => {
     }
   };
 
-  useEffect(() => syncData(), [mqtt.connected]);
+  useEffect(() => syncData(), [mqtt.status]);
   useEffect(() => {
     if (settings.ready) {
-      if (!mqtt.connected) mqtt.connect(`wss://${settings.mqttUrl}`);
+      if (mqtt.status != 'connected') mqtt.connect(`wss://${settings.mqttUrl}`);
       setDevs(settings.devices);
       syncData();
     }
