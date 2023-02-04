@@ -13,3 +13,12 @@ export function useLocalStorage<T>(key: string, def: T): Value<T> {
 
   return [value, setValue];
 }
+
+/*************************************************************************/
+export type MqttConfig = { url: string; secrat: string };
+export const useMqttConfig = (key: string) => {
+  return useLocalStorage<MqttConfig>(key, {
+    url: 'broker.emqx.io:8084/mqtt',
+    secrat: '',
+  });
+};

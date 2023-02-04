@@ -10,7 +10,7 @@ type ICSO = IClientSubscribeOptions;
 type ConFunc = (url: string) => any;
 type Msg = { topic: string; data: string };
 type ProviderProps = { children: ReactNode };
-type ConnStatus = 'offline' | 'connected' | 'disconnected';
+type ConnStatus = 'offline' | 'connected' | 'disconnected' | 'reconnecting';
 type MqttCtx = { status: ConnStatus; client?: MqttClient; connect: ConFunc };
 
 const MqttContext = createContext<MqttCtx>({} as MqttCtx);
@@ -24,9 +24,10 @@ export const MqttProvider = ({ children }: ProviderProps) => {
   const connect = (url: string) => {
     if (url == urlRef.current) return;
     mqttRef.current = mqttConnect(url);
+    mqttRef.current.on('offline', () => setStatus('offline'));
     mqttRef.current.on('connect', () => setStatus('connected'));
     mqttRef.current.on('disconnect', () => setStatus('disconnected'));
-    mqttRef.current.on('offline', () => setStatus('offline'));
+    mqttRef.current.on('reconnect', () => setStatus('reconnecting'));
     mqttRef.current.on('error', (err) => setStatus(err.message as 'offline'));
     mqttRef.current.on('end', () => setStatus('offline'));
     return () => mqttRef.current?.end();

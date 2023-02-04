@@ -1,20 +1,14 @@
 import { useSubscription } from '@/lib/mqtt';
 import { useEffect } from 'react';
 import { useSettings } from '../settings';
+import { useMqttConfig } from '@/lib/hooks';
 
 /* Test Component */
 export default function Update() {
-  const [settings] = useSettings();
-  const { mqtt, message } = useSubscription([
-    `${settings.mqttPrefix}/+/res/sonoff`,
-  ]);
+  const [config, setConfig] = useMqttConfig('mqtt-config');
+  const { mqtt, message } = useSubscription([`${config.secrat}/+/res/sonoff`]);
 
-  console.log(message);
-
-  useEffect(() => {
-    if (!settings.ready) return;
-    mqtt.connect(`wss://${settings.mqttUrl}`);
-  }, [settings]);
+  useEffect(() => mqtt.connect(`wss://${config.url}`), []);
 
   return <div>Update Firmware {mqtt.status}</div>;
 }
