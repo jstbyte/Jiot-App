@@ -22,17 +22,13 @@ export const MqttProvider = ({ children }: ProviderProps) => {
   const urlRef = useRef('');
 
   const connect = (url: string) => {
-    if (url.length < 10) return; // Invalid URL;
-    if (url == urlRef.current) return; // Skips;
-
-    urlRef.current = url;
+    if (url == urlRef.current) return;
     mqttRef.current = mqttConnect(url);
     mqttRef.current.on('connect', () => setStatus('connected'));
     mqttRef.current.on('disconnect', () => setStatus('disconnected'));
     mqttRef.current.on('offline', () => setStatus('offline'));
     mqttRef.current.on('error', (err) => setStatus(err.message as 'offline'));
     mqttRef.current.on('end', () => setStatus('offline'));
-
     return () => mqttRef.current?.end();
   };
 
