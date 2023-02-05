@@ -1,4 +1,4 @@
-import { useMqttHelper } from '@/lib/mqtt';
+import { useSubscription } from '@/lib/mqtt';
 import { useEffect, useState } from 'react';
 import { useSettings, Device, SonoffService } from '../settings';
 
@@ -6,8 +6,8 @@ export const useStore = () => {
   const [settings] = useSettings();
   const [devs, setDevs] = useState<Device[]>([]);
 
-  const mqtt = useMqttHelper(
-    `${settings.mqttPrefix}/+/res/#`,
+  const mqtt = useSubscription(
+    [`${settings.mqttPrefix}/+/res/#`],
     (topic, payload) => {
       const regEx = /^[\s\S]*\/([a-zA-Z0-9._]{3,10})\/res\/[\s\S]*$/;
       const match = topic.match(regEx);
@@ -19,7 +19,7 @@ export const useStore = () => {
               if (topic.includes('sonoff')) {
                 const sonoffMod = [...(dev.services.sonoff as SonoffService[])];
                 const data = payload.toString().split(';');
-                data.forEach((el) => {
+                data.forEach((el: any) => {
                   const csd = el.match(/^([0-9]{1,3}):([0-9]{1,3})$/);
                   if (csd) {
                     sonoffMod[parseInt(csd[1])].synced = true;

@@ -1,23 +1,26 @@
 import { matches } from 'mqtt-pattern';
 import { connect as mqttConnect } from 'mqtt/dist/mqtt.min';
-import { createContext, useCallback, useContext } from 'react';
+import { createContext, useCallback, useContext, useMemo } from 'react';
 import { useEffect, useRef, useState, ReactNode } from 'react';
 import type { IClientSubscribeOptions } from 'mqtt/dist/mqtt.min';
 import type { MqttClient, OnMessageCallback } from 'mqtt/dist/mqtt.min';
 
 /* Types Declarations */
-type ICSO = IClientSubscribeOptions;
 type ConFunc = (url: string) => any;
-type Msg = { topic: string; data: string };
-type ProviderProps = { children: ReactNode };
+type Parser<T> = (payload: string) => T;
+type MqttProviderProps = { children: ReactNode };
+type MessageCallback = (topic: string, payload: any) => any;
+type Subscribers = Map<string, (topic: string, payload: any) => any>;
+type Mctx = { status: ConnStatus; client?: MqttClient; connect: ConFunc };
+type MqttCtx = Mctx & { subscribers: Subscribers }; // Use This Type only;
 type ConnStatus = 'offline' | 'connected' | 'disconnected' | 'reconnecting';
-type MqttCtx = { status: ConnStatus; client?: MqttClient; connect: ConFunc };
 
 const MqttContext = createContext<MqttCtx>({} as MqttCtx);
 export const useMqtt = () => useContext(MqttContext);
 
-export const MqttProvider = ({ children }: ProviderProps) => {
+export function MqttProvider({ children }: MqttProviderProps) {
   const [status, setStatus] = useState<ConnStatus>('offline');
+  const _mapRef = useRef<Subscribers>(new Map());
   const mqttRef = useRef<MqttClient>();
   const urlRef = useRef('');
 
@@ -30,8 +33,12 @@ export const MqttProvider = ({ children }: ProviderProps) => {
     mqttRef.current.on('reconnect', () => setStatus('reconnecting'));
     mqttRef.current.on('error', (err) => setStatus(err.message as 'offline'));
     mqttRef.current.on('end', () => setStatus('offline'));
-    return () => mqttRef.current?.end();
+    mqttRef.current.on('message', (topic, payload) => {
+      _mapRef.current.get(topic)?.(topic, payload);
+    });
   };
+
+  useEffect(() => () => mqttRef.current?.end() as any, []);
 
   return (
     <MqttContext.Provider
@@ -39,56 +46,55 @@ export const MqttProvider = ({ children }: ProviderProps) => {
         status,
         connect,
         client: mqttRef.current,
+        subscribers: _mapRef.current,
       }}>
       {children}
     </MqttContext.Provider>
   );
-};
+}
 
-export const useSubscription = (topic: string[], options = {} as ICSO) => {
-  const [message, setMessage] = useState<Msg>({ topic: '', data: '' });
-  const mqtt = useMqtt();
-
-  const subscribe = useCallback(() => {
-    mqtt.client?.subscribe(topic, options);
-  }, [mqtt.client, topic, options]);
+export function useTopic<T = string>(topic: string, parser?: Parser<T>) {
+  const [message, setMessage] = useState<T | string>('');
+  const { subscribers } = useMqtt();
 
   const callback = useCallback(
-    (_topic: string, _data: any) => {
+    (_topic: string, _payload: any) => {
+      const payload = _payload.toString() as string;
+      setMessage(parser?.(payload) || payload);
+    },
+    [topic, parser]
+  );
+
+  useEffect(() => {
+    subscribers.set(topic, callback);
+    return () => subscribers.delete(topic) as any;
+  }, [callback]);
+
+  return message;
+}
+
+export function useSubscription(topic: string[], callback?: MessageCallback) {
+  const mqtt = useMqtt(); // Get Global Mqtt Handle From MqttProvider Context;
+
+  const callbackMemo = useCallback(
+    (_topic: string, _payload: any) => {
       if ([topic].flat().some((rTopic) => matches(rTopic, _topic))) {
-        setMessage({
-          topic: _topic,
-          data: _data.toString(),
-        });
+        callback?.(_topic, _payload);
       }
     },
     [topic]
   );
 
   useEffect(() => {
-    if (!mqtt.client?.connected) return;
-    subscribe(); // Subscribe The Topic;
-    mqtt.client.addListener('message', callback);
-    return () => {
-      mqtt.client?.removeListener('message', callback);
-      // Maybe Unsubscribe;
-    };
-  }, [mqtt.client, subscribe, callback]);
-
-  return { mqtt, message };
-};
-
-/** @deprecated use useSubscription instead */
-export const useMqttHelper = (topic: string, callback: OnMessageCallback) => {
-  const mqtt = useMqtt();
-  useEffect(() => {
-    if (mqtt?.status != 'connected') return;
+    if (mqtt.status != 'connected') return;
     mqtt.client?.subscribe(topic);
-    mqtt.client?.addListener('message', callback);
+    if (!callback) return;
+
+    mqtt.client?.addListener('message', callbackMemo);
     return () => {
       mqtt.client?.unsubscribe(topic);
-      mqtt.client?.removeListener('message', callback);
+      mqtt.client?.removeListener('message', callbackMemo);
     };
-  }, [mqtt, topic]);
+  }, [mqtt.client, mqtt.status, callbackMemo]);
   return mqtt;
-};
+}

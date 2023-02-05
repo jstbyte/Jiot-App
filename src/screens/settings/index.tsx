@@ -12,9 +12,10 @@ import { MdLink, MdLock, MdSave, MdSearch, MdDelete } from 'react-icons/md';
 import { BsDoorOpenFill } from 'react-icons/bs';
 import { ImSwitch } from 'react-icons/im';
 import { Screen } from '@/components/AppShell';
-import { useMqttHelper } from '@/lib/mqtt';
+import { useSubscription } from '@/lib/mqtt';
 import { getUnique } from '@/lib/utils';
 import { motion } from 'framer-motion';
+import { Link } from '@/components/NavLink';
 
 export type SonoffService = { name: string; synced: boolean; state: boolean };
 export type DoorService = { name: string; synced: boolean; state: number };
@@ -69,8 +70,8 @@ export default function Settings() {
     },
   });
 
-  const mqtt = useMqttHelper(
-    `${form.values.mqttPrefix}/+/res/devinfo`,
+  const mqtt = useSubscription(
+    [`${form.values.mqttPrefix}/+/res/devinfo`],
     (topic, payload) => {
       const regEx = /^[\s\S]*\/([a-zA-Z0-9._]{3,10})\/res\/devinfo$/;
       const match = topic.match(regEx);
