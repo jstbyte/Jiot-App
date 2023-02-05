@@ -88,7 +88,7 @@ export function useSubscription(topic: string[], callback?: MessageCallback) {
   useEffect(() => {
     if (mqtt.status != 'connected') return;
     mqtt.client?.subscribe(topic);
-    if (!callback) return;
+    if (!callback) return () => mqtt.client?.unsubscribe(topic);
 
     mqtt.client?.addListener('message', callbackMemo);
     return () => {
