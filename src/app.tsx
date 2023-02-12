@@ -5,15 +5,15 @@ import { Route } from '@/components/Router';
 import { MqttProvider } from '@/lib/mqtt';
 import Settings from '@/screens/settings';
 import Services from '@/screens/services';
-import Update from '@/screens/update';
+import Update from './screens/update';
 
 export default function App() {
   return (
     <MqttProvider>
       <Body>
         <Route path='/' component={<Services />} />
-        <Route path='/settings' component={<Settings />} />
         <Route path='/update' component={<Update />} />
+        <Route path='/settings' component={<Settings />} />
       </Body>
 
       <NavBar>

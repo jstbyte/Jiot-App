@@ -1,249 +1,101 @@
-import { useEffect, useMemo, useRef } from 'react';
-import {
-  createStyles,
-  Title,
-  TextInput,
-  Button,
-  CloseButton,
-} from '@mantine/core';
-import { useForm } from '@mantine/form';
-import { useLocalStorage } from '@mantine/hooks';
-import { MdLink, MdLock, MdSave, MdSearch, MdDelete } from 'react-icons/md';
-import { BsDoorOpenFill } from 'react-icons/bs';
-import { ImSwitch } from 'react-icons/im';
+import { MdAddCircleOutline, MdDelete, MdEdit, MdSave } from 'react-icons/md';
+import { ActionIcon, Text, Modal, TextInput, Title } from '@mantine/core';
 import { Screen } from '@/components/AppShell';
-import { useSubscription } from '@/lib/mqtt';
+import { createStyles } from '@mantine/core';
+import { useLocalStorage, useMqttConfig } from '@/lib/hooks';
+import { ICONS, IService } from './define';
+import { useForm } from '@mantine/form';
 import { getUnique } from '@/lib/utils';
-import { motion } from 'framer-motion';
-import { Link } from '@/components/NavLink';
+import { AddService } from './service';
+import { useState } from 'react';
 
-export type SonoffService = { name: string; synced: boolean; state: boolean };
-export type DoorService = { name: string; synced: boolean; state: number };
-export type Services = { sonoff?: SonoffService[]; door?: DoorService };
-
-/* Service Defination From Device Find */
-interface DevInfo {
-  mac: string;
-  name: string;
-  services: { name: string; data: any }[];
-}
-
-export interface Device {
-  mac: string;
-  name: string;
-  synced: boolean;
-  services: Services;
-}
-
-export interface SettingsType {
-  ready: boolean;
-  mqttUrl: string;
-  mqttPrefix: string;
-  devices: Device[];
-}
-
-const defaultSettings: SettingsType = {
-  ready: false,
-  mqttUrl: '',
-  mqttPrefix: '',
-  devices: [],
-};
-
-export const useSettings = () => {
-  return useLocalStorage({
-    key: 'settings',
-    defaultValue: defaultSettings,
-  });
-};
+type ModalData = { open: boolean; data?: IService };
 
 export default function Settings() {
+  const [services, setServices] = useLocalStorage<IService[]>('services', []);
+  const [modal, setModal] = useState<ModalData>({ open: false });
+  const [config, setConfig] = useMqttConfig('mqtt-config');
   const { classes } = useStyles();
-  const [settings, setSettings] = useSettings();
-  const devInfoRef = useRef<Device[]>([]);
-
-  const form = useForm<SettingsType>({
+  const form = useForm({
     initialValues: {
-      ready: true,
-      mqttUrl: 'broker.emqx.io:8084/mqtt',
-      mqttPrefix: '',
-      devices: [],
+      mqttSecrat: config.secrat,
+      services: [...services],
+      mqttUrl: config.url,
     },
   });
 
-  const mqtt = useSubscription(
-    [`${form.values.mqttPrefix}/+/res/devinfo`],
-    (topic, payload) => {
-      const regEx = /^[\s\S]*\/([a-zA-Z0-9._]{3,10})\/res\/devinfo$/;
-      const match = topic.match(regEx);
-
-      if (match?.length == 2) {
-        let services: Services = {}; /* Store All Services */
-        const device = JSON.parse(payload.toString()) as DevInfo;
-        device.services.forEach((service) => {
-          if (service.name == 'sonoff') {
-            services[service.name] = [...Array(service.data as number)].map(
-              (_, i) => ({
-                state: false,
-                synced: false,
-                name: `Switch ${i}`,
-              })
-            );
-            return;
-          }
-          /* Handle Other Service Case */
-        });
-
-        devInfoRef.current.push({
-          name: device.name,
-          mac: device.mac,
-          synced: false,
-          services,
-        });
-
-        form.setFieldValue('ready', true);
-        form.setFieldValue(
-          'devices',
-          getUnique([...form.values.devices, ...devInfoRef.current], 'name')
-        );
-      }
-    }
-  );
-
-  const isClearable = useMemo(
-    () =>
-      form.values.mqttPrefix != settings.mqttPrefix &&
-      form.values.devices.length,
-    [form.values.devices, form.values.mqttPrefix]
-  );
-
-  const removeDevByIndex = (name: string) => () => {
-    form.setFieldValue(
-      'devices',
-      form.values.devices.filter((dev) => dev.name != name)
-    );
+  const saveMqttConfig = () => {
+    setConfig({
+      url: form.values.mqttUrl,
+      secrat: form.values.mqttSecrat,
+    });
   };
 
-  const handleFindOrClear = () => {
-    devInfoRef.current = [];
+  const setService = (service: IService) => {
+    const services =
+      service.topic == modal?.data?.topic
+        ? form.values.services.map((s) =>
+            s.topic == service.topic ? service : s
+          )
+        : getUnique([...form.values.services, service], 'topic');
 
-    if (isClearable) {
-      form.setFieldValue('ready', true);
-      form.setFieldValue('devices', []);
-      return;
-    }
-
-    if (mqtt.status == 'connected') {
-      form.setFieldValue('ready', false);
-      mqtt.client?.publish(`${form.values.mqttPrefix}/*/req/devinfo`, '');
-    } else {
-      form.setFieldValue('ready', true);
-      mqtt.connect(`wss://${form.values.mqttUrl}`);
-    }
+    form.setFieldValue('services', services);
+    setModal({ open: false });
   };
 
-  useEffect(() => {
-    if (!settings.ready) return;
-    form.setValues({ ...settings });
-  }, [settings.ready]);
+  const saveServices = () => setServices(form.values.services);
+  const remService = (i: number) => () => form.removeListItem('services', i);
 
   return (
-    <form
-      onSubmit={form.onSubmit((data) =>
-        setSettings((state) => ({ ...state, ...data, ready: true }))
-      )}>
-      <Screen className={classes.root}>
-        <Title order={2} className={classes.header}>
-          Settings
-        </Title>
-        <TextInput
-          label='Mqtt Broker Address'
-          icon={<MdLink />}
-          required
-          {...form.getInputProps('mqttUrl')}
-        />
-        <TextInput
-          type='password'
-          label='Secrat Key'
-          icon={<MdLock />}
-          required
-          {...form.getInputProps('mqttPrefix')}
-        />
-        <div className={classes.buttonsContainer}>
-          <Button
-            size='sm'
-            style={{ flex: 1 }}
-            leftIcon={
-              isClearable ? (
-                <MdDelete size={18} />
-              ) : mqtt.status == 'connected' ? (
-                <MdSearch size={18} />
-              ) : (
-                <MdLink size={18} />
-              )
-            }
-            disabled={mqtt.status == 'connected' && !form.values.mqttPrefix}
-            onClick={handleFindOrClear}
-            loading={mqtt.status == 'connected' && !form.values.ready}>
-            {isClearable
-              ? 'Clear Devices'
-              : mqtt.status == 'connected'
-              ? 'Find Devices'
-              : 'Connect Server'}
-          </Button>
-          <Button
-            size='sm'
-            style={{ flex: 1 }}
-            type='submit'
-            leftIcon={<MdSave />}
-            disabled={!form.values.ready || !form.values.devices.length}>
-            Save Devices
-          </Button>
-        </div>
-        {form.values.devices.map((dev, i) => (
-          <motion.div
-            initial={{ opacity: 0, scaleY: 0.5, translateY: 100 }}
-            animate={{ opacity: 1, scaleY: 1, translateY: 0 }}
-            className={classes.deviceContainer}
-            transition={{ delay: i * 0.075 }}
-            key={dev.name}>
-            <TextInput
-              disabled
-              variant='filled'
-              className='dname'
-              label='Device Name'
-              size='md'
-              rightSection={
-                <CloseButton
-                  color='red'
-                  variant='subtle'
-                  onClick={removeDevByIndex(dev.name)}
-                />
-              }
-              {...form.getInputProps(`devices.${i}.name`)}
-            />
-            <div className={classes.digioutNamesContainer}>
-              {dev.services.sonoff?.map((_, ii) => (
-                <TextInput
-                  key={ii}
-                  icon={<ImSwitch />}
-                  {...form.getInputProps(
-                    `devices.${i}.services.sonoff.${ii}.name`
-                  )}
-                />
-              ))}
-            </div>
-            {dev.services.door && (
-              <div>
-                <TextInput
-                  icon={<BsDoorOpenFill />}
-                  {...form.getInputProps(`devices.${i}.services.door.name`)}
-                />
-              </div>
-            )}
-          </motion.div>
-        ))}
-      </Screen>
-    </form>
+    <Screen className={classes.root}>
+      <Title order={4} align='center' color='green'>
+        Device & Service Settings
+      </Title>
+      <TextInput
+        required
+        label='Enter Mqtt Url'
+        {...form.getInputProps('mqttUrl')}
+        onBlur={saveMqttConfig}
+      />
+      <TextInput
+        required
+        label='Enter Topic Secrat'
+        {...form.getInputProps('mqttSecrat')}
+        onBlur={saveMqttConfig}
+      />
+
+      {form.values.services.map((service, i) => {
+        const Icon = ICONS[service.icon];
+        return (
+          <div key={service.topic} className={classes.services}>
+            <Icon size={24} />
+            <Text className={classes.serviceTopic}>{service.topic}</Text>
+            <ActionIcon onClick={() => setModal({ open: true, data: service })}>
+              <MdEdit color='yellow' />
+            </ActionIcon>
+            <ActionIcon onClick={remService(i)}>
+              <MdDelete color='red' />
+            </ActionIcon>
+          </div>
+        );
+      })}
+
+      <div className={classes.addButtonContainer}>
+        <ActionIcon size='xl' onClick={() => setModal({ open: true })}>
+          <MdAddCircleOutline size={28} />
+        </ActionIcon>
+        <ActionIcon size='xl' onClick={saveServices}>
+          <MdSave size={28} />
+        </ActionIcon>
+      </div>
+
+      <Modal
+        opened={modal.open}
+        onClose={() => setModal({ open: false })}
+        title='Service Setup'>
+        <AddService onSubmit={setService} value={modal.data} />
+      </Modal>
+    </Screen>
   );
 }
 
@@ -253,24 +105,28 @@ const useStyles = createStyles((theme) => ({
     margin: 'auto',
     padding: '1rem',
     display: 'flex',
-    flexDirection: 'column',
+    overflowX: 'hidden',
     alignItems: 'stretch',
     gap: theme.spacing.xs,
+    flexDirection: 'column',
   },
-  header: {
-    color: theme.primaryColor,
-    margin: theme.spacing.md,
-    textAlign: 'center',
-  },
-  deviceContainer: {
-    marginBottom: theme.spacing.md,
-  },
-  digioutNamesContainer: {
-    borderTop: `3px solid ${theme.primaryColor}`,
-  },
-  buttonsContainer: {
+  services: {
     display: 'flex',
-    justifyContent: 'stretch',
-    gap: theme.spacing.md,
+    alignItems: 'center',
+    padding: theme.spacing.xs,
+    boxShadow: theme.shadows.md,
+  },
+  serviceTopic: {
+    flex: 1,
+    overflow: 'hidden',
+    fontStyle: 'italic',
+    whiteSpace: 'nowrap',
+    textOverflow: 'ellipsis',
+    marginLeft: theme.spacing.sm,
+  },
+  addButtonContainer: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 }));

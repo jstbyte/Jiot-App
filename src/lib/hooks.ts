@@ -4,11 +4,16 @@ type Value<T> = [T, (value: T) => void]; // Initial Value Type;
 export function useLocalStorage<T>(key: string, def: T): Value<T> {
   const [value, setValue] = useState<T>(() => {
     const item = window.localStorage.getItem(key);
-    return item !== null ? JSON.parse(item) : def;
+    try {
+      return item ? JSON.parse(item as string) : def;
+    } catch (error) {
+      console.debug(error);
+      return item;
+    }
   });
 
   useEffect(() => {
-    window.localStorage.setItem(key, JSON.stringify(value));
+    window.localStorage.setItem(key, JSON.stringify(value || ''));
   }, [value, key]);
 
   return [value, setValue];
