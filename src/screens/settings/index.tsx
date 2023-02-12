@@ -59,6 +59,7 @@ export default function Settings() {
       />
       <TextInput
         required
+        type='password'
         label='Enter Topic Secrat'
         {...form.getInputProps('mqttSecrat')}
         onBlur={saveMqttConfig}
