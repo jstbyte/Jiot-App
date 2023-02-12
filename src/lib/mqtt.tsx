@@ -1,9 +1,8 @@
-import { matches } from 'mqtt-pattern';
-import { connect as mqttConnect } from 'mqtt/dist/mqtt.min';
-import { createContext, useCallback, useContext, useMemo } from 'react';
+import { createContext, useCallback, useContext } from 'react';
 import { useEffect, useRef, useState, ReactNode } from 'react';
-import type { IClientSubscribeOptions } from 'mqtt/dist/mqtt.min';
-import type { MqttClient, OnMessageCallback } from 'mqtt/dist/mqtt.min';
+import { connect as mqttConnect } from 'mqtt/dist/mqtt.min';
+import type { MqttClient } from 'mqtt/dist/mqtt.min';
+import { matches } from 'mqtt-pattern';
 
 /* Types Declarations */
 type ConFunc = (url: string) => any;

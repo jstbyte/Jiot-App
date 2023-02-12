@@ -5,10 +5,10 @@ import {
   ActionIcon,
   Center,
 } from '@mantine/core';
+import { ICONS, ServiceProps } from '@/screens/settings/define';
+import Containers from '@/components/Containers';
 import { useSubscription } from '@/lib/mqtt';
-import { ServiceProps } from '.';
 import { useEffect, useState } from 'react';
-import { ICONS } from '@/screens/settings/define';
 
 type SonoffState = { name: string; state: boolean; busy: boolean };
 
@@ -21,7 +21,7 @@ export default function Sonoff({ service }: ServiceProps) {
     }))
   );
 
-  const mqtt = useSubscription([service.topic], (t, p: any) => {
+  const mqtt = useSubscription([service.topic], (_, p: any) => {
     setPins((_pins) => {
       const newPins = [..._pins]; // Copy Data;
       (p.toString() as string).split(';').forEach((e) => {
@@ -63,7 +63,7 @@ export default function Sonoff({ service }: ServiceProps) {
       {pins.map((pin, i) => {
         const Icon = ICONS[service.icon];
         return (
-          <div key={pin.name + i} className={classes.sonoffContainer}>
+          <Containers.Col key={pin.name + i}>
             <Center>
               <ActionIcon
                 size={48}
@@ -92,37 +92,17 @@ export default function Sonoff({ service }: ServiceProps) {
             <Text align='center' lineClamp={2} size='sm' pt='xs' weight={600}>
               {pin.name}
             </Text>
-          </div>
+          </Containers.Col>
         );
       })}
     </>
   );
 }
 
-const pulse = keyframes`
-from, 20%, 53%, 80%, to {
-  scale: 1;
-}
-
-40%, 43% {
-  scale: 0.5;
-}
-
-70% {
-  scale: 0.9;
-}
-
-90% {
-  scale: 1;
-}
-`;
+const pulse = keyframes`from, 20%, 53%, 80%, to {scale: 1;}
+  40%, 43% {scale: 0.5;} 70% {scale: 0.9;} 90% {scale: 1;}`;
 
 const useStyles = createStyles((theme) => ({
-  sonoffContainer: {
-    borderRadius: theme.radius.sm,
-    boxShadow: theme.shadows.md,
-    padding: theme.spacing.xs,
-  },
   pushButton: {
     borderRadius: '100%',
     padding: theme.spacing.xs,

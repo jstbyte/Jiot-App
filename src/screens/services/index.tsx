@@ -1,18 +1,10 @@
-import {
-  createStyles,
-  Title,
-  Image,
-  Loader,
-  Card,
-  Grid,
-  Flex,
-} from '@mantine/core';
-import { Screen } from '@/components/AppShell';
+import { createStyles, Title, Image, Loader } from '@mantine/core';
 import { useLocalStorage, useMqttConfig } from '@/lib/hooks';
+import { IService, SERVICE_STORE } from '../settings/define';
+import Containers from '@/components/Containers';
+import { Screen } from '@/components/AppShell';
 import { useSubscription } from '@/lib/mqtt';
-import { IService } from '../settings/define';
 import { useEffect, useMemo } from 'react';
-import { SERVICE_STORE } from '@/components/services';
 
 export default function Services() {
   const { classes } = useStyles();
@@ -43,12 +35,12 @@ export default function Services() {
           Jiot
         </Title>
       </div>
-      <div className={classes.services}>
+      <Containers.Grid>
         {services.map((s) => {
           const Comp = SERVICE_STORE[s.name];
           return <Comp key={s.topic} service={s} />;
         })}
-      </div>
+      </Containers.Grid>
     </Screen>
   );
 }
@@ -75,13 +67,5 @@ const useStyles = createStyles((theme) => ({
     paddingTop: theme.spacing.xl * 3,
     display: 'flex',
     justifyContent: 'center',
-  },
-  services: {
-    gap: 3,
-    display: 'grid',
-    gridAutoRows: theme.spacing.xl * 5,
-    gridTemplateColumns: `repeat(auto-fit,minmax(${
-      theme.spacing.xl * 5
-    }px,1fr))`,
   },
 }));
