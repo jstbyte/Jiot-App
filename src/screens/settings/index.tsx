@@ -1,100 +1,107 @@
-import { MdAddCircleOutline, MdDelete, MdEdit, MdSave } from 'react-icons/md';
-import { ActionIcon, Text, Modal, TextInput, Title } from '@mantine/core';
+import {
+  MdAddCircleOutline,
+  MdCheck,
+  MdDelete,
+  MdEdit,
+  MdSave,
+} from 'react-icons/md';
+import {
+  ActionIcon,
+  Text,
+  Modal,
+  TextInput,
+  Title,
+  Tabs,
+  JsonInput,
+  Group,
+  Button,
+  Flex,
+  CopyButton,
+} from '@mantine/core';
 import { Screen } from '@/components/AppShell';
 import { createStyles } from '@mantine/core';
-import { useLocalStorage, useMqttConfig } from '@/lib/hooks';
 import { ICONS, IService } from './define';
 import { useForm } from '@mantine/form';
 import { getUnique } from '@/lib/utils';
-import { AddService } from './service';
-import { useState } from 'react';
+import { ServiceModal } from './ServiceModal';
+import { useEffect, useState } from 'react';
+import { useLocalStorage, useMqttConfig } from '@/lib/hooks';
+import JsonEditer from './JsonEditer';
+import MqttConfig from './MqttConfig';
 
 type ModalData = { open: boolean; data?: IService };
 
 export default function Settings() {
   const [services, setServices] = useLocalStorage<IService[]>('services', []);
   const [modal, setModal] = useState<ModalData>({ open: false });
-  const [config, setConfig] = useMqttConfig('mqtt-config');
-  const { classes } = useStyles();
-  const form = useForm({
-    initialValues: {
-      mqttSecrat: config.secrat,
-      services: [...services],
-      mqttUrl: config.url,
-    },
-  });
-
-  const saveMqttConfig = () => {
-    setConfig({
-      url: form.values.mqttUrl,
-      secrat: form.values.mqttSecrat,
-    });
-  };
+  const { classes } = useStyles(); /* jss Styled classes */
 
   const setService = (service: IService) => {
-    const services =
+    const _services =
       service.topic == modal?.data?.topic
-        ? form.values.services.map((s) =>
-            s.topic == service.topic ? service : s
-          )
-        : getUnique([...form.values.services, service], 'topic');
+        ? services.map((s) => (s.topic == service.topic ? service : s))
+        : getUnique([...services, service], 'topic');
 
-    form.setFieldValue('services', services);
     setModal({ open: false });
+    setServices(_services);
   };
 
-  const saveServices = () => setServices(form.values.services);
-  const remService = (i: number) => () => form.removeListItem('services', i);
+  const remService = (i: number) => () => {
+    const _services = [...services];
+    _services.splice(i, 1);
+    setServices(_services);
+  };
 
   return (
     <Screen className={classes.root}>
       <Title order={4} align='center' color='green'>
         Device & Service Settings
       </Title>
-      <TextInput
-        required
-        label='Enter Mqtt Url'
-        {...form.getInputProps('mqttUrl')}
-        onBlur={saveMqttConfig}
-      />
-      <TextInput
-        required
-        type='password'
-        label='Enter Topic Secrat'
-        {...form.getInputProps('mqttSecrat')}
-        onBlur={saveMqttConfig}
-      />
+      <MqttConfig />
 
-      {form.values.services.map((service, i) => {
-        const Icon = ICONS[service.icon];
-        return (
-          <div key={service.topic} className={classes.services}>
-            <Icon size={24} />
-            <Text className={classes.serviceTopic}>{service.topic}</Text>
-            <ActionIcon onClick={() => setModal({ open: true, data: service })}>
-              <MdEdit color='yellow' />
-            </ActionIcon>
-            <ActionIcon onClick={remService(i)}>
-              <MdDelete color='red' />
-            </ActionIcon>
-          </div>
-        );
-      })}
+      <Tabs defaultValue='basic' keepMounted={false}>
+        <Tabs.List grow>
+          <Tabs.Tab value='basic'>Basic</Tabs.Tab>
+          <Tabs.Tab value='advance'>Advance</Tabs.Tab>
+        </Tabs.List>
 
-      <div className={classes.addButtonContainer}>
-        <ActionIcon size='xl' onClick={() => setModal({ open: true })}>
-          <MdAddCircleOutline size={28} />
-        </ActionIcon>
-        <ActionIcon size='xl' onClick={saveServices}>
-          <MdSave size={28} />
-        </ActionIcon>
-      </div>
+        <Tabs.Panel value='basic'>
+          {services.map((service, i) => {
+            const Icon = ICONS[service.icon];
+            return (
+              <div key={service.topic} className={classes.services}>
+                <Icon size={24} />
+                <Text className={classes.serviceTopic}>{service.topic}</Text>
+                <ActionIcon
+                  onClick={() => setModal({ open: true, data: service })}>
+                  <MdEdit color='yellow' />
+                </ActionIcon>
+                <ActionIcon onClick={remService(i)}>
+                  <MdDelete color='red' />
+                </ActionIcon>
+              </div>
+            );
+          })}
+          <Group position='center' pt='md'>
+            <Button
+              leftIcon={<MdAddCircleOutline size={24} />}
+              onClick={() => setModal({ open: true })}
+              variant='outline'>
+              Add
+            </Button>
+          </Group>
+        </Tabs.Panel>
+
+        <Tabs.Panel value='advance'>
+          <JsonEditer data={services} onSave={setServices} />
+        </Tabs.Panel>
+      </Tabs>
 
       <Modal
         opened={modal.open}
         onClose={() => setModal({ open: false })}
         title='Service Setup'>
-        <AddService onSubmit={setService} value={modal.data} />
+        <ServiceModal onSubmit={setService} value={modal.data} />
       </Modal>
     </Screen>
   );
@@ -124,10 +131,5 @@ const useStyles = createStyles((theme) => ({
     whiteSpace: 'nowrap',
     textOverflow: 'ellipsis',
     marginLeft: theme.spacing.sm,
-  },
-  addButtonContainer: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
   },
 }));

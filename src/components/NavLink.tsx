@@ -43,13 +43,12 @@ const useStyles = createStyles((theme) => ({
 
 interface StyledProps {
   href: string;
-  name: string;
+  title: string;
   icon: IconType;
   replace?: boolean;
-  component: ReactNode;
 }
 
-export const NavLink = ({ href, name, ...props }: StyledProps) => {
+export const NavLink = ({ href, title, ...props }: StyledProps) => {
   const router = useRouter();
   const { classes } = useStyles();
   return (
@@ -58,7 +57,7 @@ export const NavLink = ({ href, name, ...props }: StyledProps) => {
         size={28}
         className={`${router.path === href ? classes.active : ''}`}
       />
-      <span>{name}</span>
+      <span>{title}</span>
     </Link>
   );
 };

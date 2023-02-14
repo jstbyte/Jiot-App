@@ -4,9 +4,10 @@ import ReactDOM from 'react-dom/client';
 import { StrictMode } from 'react';
 import GlobalStyle from './styles';
 import App from '@/app';
+import { isDarkMode } from './lib/utils';
 
 const theme: MantineThemeOverride = {
-  colorScheme: 'dark',
+  colorScheme: isDarkMode() ? 'dark' : 'light',
   primaryColor: 'green',
 };
 

@@ -69,3 +69,8 @@ export function getUnique(arr: Array<any>, key: string) {
       .map((e) => arr[e as number])
   );
 }
+
+export function isDarkMode() {
+  const mode = window.matchMedia('(prefers-color-scheme: dark)');
+  return mode.matches;
+}

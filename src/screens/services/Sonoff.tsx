@@ -4,6 +4,7 @@ import {
   Text,
   ActionIcon,
   Center,
+  Box,
 } from '@mantine/core';
 import { ICONS, ServiceProps } from '@/screens/settings/define';
 import Containers from '@/components/Containers';
@@ -63,33 +64,35 @@ export default function Sonoff({ service }: ServiceProps) {
       {pins.map((pin, i) => {
         const Icon = ICONS[service.icon];
         return (
-          <Containers.Col key={pin.name + i}>
+          <Containers.Col key={pin.name + i} topic={service.topic}>
             <Center>
-              <ActionIcon
-                size={48}
-                radius='xl'
-                onClick={() => handleChange(i)}
-                className={
-                  pin.busy
-                    ? classes.iconBusy
-                    : pin.state
-                    ? classes.iconOn
-                    : classes.iconOff
-                }>
-                {pin.busy ? (
-                  <Icon size={36} color='gray' className={classes.icon} />
-                ) : pin.state ? (
-                  <Text color={theme.colors.green[5]} weight='bold'>
-                    ON
-                  </Text>
-                ) : (
-                  <Text color={theme.colors.red[5]} weight='bold'>
-                    OFF
-                  </Text>
-                )}
-              </ActionIcon>
+              <Box className={classes.pushButtonConatiner}>
+                <ActionIcon
+                  size={48}
+                  radius='xl'
+                  onClick={() => handleChange(i)}
+                  className={
+                    pin.busy
+                      ? classes.iconBusy
+                      : pin.state
+                      ? classes.iconOn
+                      : classes.iconOff
+                  }>
+                  {pin.busy ? (
+                    <Icon size={36} color='gray' className={classes.icon} />
+                  ) : pin.state ? (
+                    <Text color={theme.colors.green[5]} weight='bold'>
+                      ON
+                    </Text>
+                  ) : (
+                    <Text color={theme.colors.red[5]} weight='bold'>
+                      OFF
+                    </Text>
+                  )}
+                </ActionIcon>
+              </Box>
             </Center>
-            <Text align='center' lineClamp={2} size='sm' pt='xs' weight={600}>
+            <Text align='center' truncate size='xs' pt='xs' weight={600}>
               {pin.name}
             </Text>
           </Containers.Col>
@@ -103,21 +106,26 @@ const pulse = keyframes`from, 20%, 53%, 80%, to {scale: 1;}
   40%, 43% {scale: 0.5;} 70% {scale: 0.9;} 90% {scale: 1;}`;
 
 const useStyles = createStyles((theme) => ({
+  pushButtonConatiner: {
+    borderRadius: '100%',
+    padding: 2,
+    border: `1px solid ${theme.colors.gray[5]}`,
+  },
   pushButton: {
     borderRadius: '100%',
     padding: theme.spacing.xs,
   },
   iconOn: {
     borderRadius: '100%',
-    boxShadow: `1px 1px 5px ${theme.colors.green[5]}`,
+    boxShadow: `0px 0px 10px ${theme.colors.green[5]}`,
   },
   iconOff: {
     borderRadius: '100%',
-    boxShadow: `0px 0px 5px ${theme.colors.red[5]}`,
+    boxShadow: `0px 0px 10px ${theme.colors.red[5]}`,
   },
   iconBusy: {
     borderRadius: '100%',
-    boxShadow: `0px 0px 5px ${theme.colors.gray[5]}`,
+    boxShadow: `0px 0px 10px ${theme.colors.gray[5]}`,
   },
   icon: {
     animation: `${pulse} 1s ease infinite`,

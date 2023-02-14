@@ -9,8 +9,8 @@ import {
 import { IService, SERVICES, ICONS } from './define';
 import { useForm } from '@mantine/form';
 
-type AddServicePros = { onSubmit: (arg: IService) => any; value?: IService };
-export function AddService({ onSubmit, value }: AddServicePros) {
+type ServiceModalPros = { onSubmit: (arg: IService) => any; value?: IService };
+export function ServiceModal({ onSubmit, value }: ServiceModalPros) {
   const handleSubmit = (v: IService) => onSubmit(v);
   const form = useForm<IService>({
     initialValues: value || {
@@ -30,7 +30,7 @@ export function AddService({ onSubmit, value }: AddServicePros) {
       ) : (
         <TextInput
           required
-          label='Service Topic'
+          label='Topic'
           {...form.getInputProps('topic')}
           placeholder='Enter a unique topic'
           disabled={!!value?.topic}
@@ -39,19 +39,22 @@ export function AddService({ onSubmit, value }: AddServicePros) {
       <Select
         required
         data={[...SERVICES]}
-        label='Service Name'
+        label='Name'
         placeholder='Please Select One'
         {...form.getInputProps('name')}
       />
       <Select
         required
-        label='Service Icon'
+        label='Icon'
         placeholder='Please Select One'
         data={[...Object.keys(ICONS)]}
         {...form.getInputProps('icon')}
       />
       <Textarea
         required
+        autosize
+        minRows={1}
+        maxRows={5}
         label='Service Data'
         {...form.getInputProps('data')}
         placeholder='Enter Service Spacific Data'

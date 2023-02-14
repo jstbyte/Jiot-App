@@ -1,4 +1,4 @@
-import { createStyles, Title, Image, Loader } from '@mantine/core';
+import { createStyles, Title, Image, Loader, Box, Flex } from '@mantine/core';
 import { useLocalStorage, useMqttConfig } from '@/lib/hooks';
 import { IService, SERVICE_STORE } from '../settings/define';
 import Containers from '@/components/Containers';
@@ -7,7 +7,7 @@ import { useSubscription } from '@/lib/mqtt';
 import { useEffect, useMemo } from 'react';
 
 export default function Services() {
-  const { classes } = useStyles();
+  const { classes, theme } = useStyles();
   const [config] = useMqttConfig('mqtt-config');
   const [_services] = useLocalStorage<IService[]>('services', []);
   const mqtt = useSubscription([`${config.secrat}/+/req/sonoff`]);
@@ -21,7 +21,7 @@ export default function Services() {
 
   return (
     <Screen className={classes.root}>
-      <div className={classes.status}>
+      <Flex justify='center' align='center' pos='sticky'>
         {mqtt.status != 'reconnecting' ? (
           <Image
             src='/images/brand.ico'
@@ -31,11 +31,11 @@ export default function Services() {
         ) : (
           <Loader size={28} />
         )}
-        <Title order={2} className={classes.header}>
+        <Title mx='xs' order={2} color={theme.primaryColor}>
           Jiot
         </Title>
-      </div>
-      <Containers.Grid>
+      </Flex>
+      <Containers.Grid p='xs'>
         {services.map((s) => {
           const Comp = SERVICE_STORE[s.name];
           return <Comp key={s.topic} service={s} />;
@@ -47,21 +47,10 @@ export default function Services() {
 
 const useStyles = createStyles((theme) => ({
   root: {
-    margin: theme.spacing.sm,
     display: 'flex',
-    flexDirection: 'column',
     alignItems: 'stretch',
     gap: theme.spacing.xs,
-  },
-  header: {
-    textAlign: 'center',
-    color: theme.primaryColor,
-    margin: theme.spacing.xs,
-  },
-  status: {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
+    flexDirection: 'column',
   },
   loaderContainer: {
     paddingTop: theme.spacing.xl * 3,

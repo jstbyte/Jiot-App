@@ -1,9 +1,9 @@
-import { Box, BoxProps } from '@mantine/core';
 import { PolymorphicComponentProps } from '@mantine/utils';
+import { Box, BoxProps, Text } from '@mantine/core';
+import { useMemo } from 'react';
 
-type ServiceProps = PolymorphicComponentProps<'div', BoxProps>;
-
-function Services(props: ServiceProps) {
+type ServicesProps = PolymorphicComponentProps<'div', BoxProps>;
+function Services(props: ServicesProps) {
   return (
     <Box
       {...props}
@@ -20,15 +20,26 @@ function Services(props: ServiceProps) {
   );
 }
 
-function Service(props: ServiceProps) {
+type ServiceProps = ServicesProps & { topic: string };
+function Service({ topic, ...props }: ServiceProps) {
+  const dev = useMemo(() => topic.split('/')[1], [topic]);
   return (
     <Box
       {...props}
       sx={(theme) => ({
-        boxShadow: theme.shadows.md,
+        boxSizing: 'border-box',
+        boxShadow: theme.shadows.xs,
         borderRadius: theme.radius.sm,
-        padding: theme.spacing.xs,
+        padding: theme.spacing.xs / 2,
+        border: `1px solid ${
+          theme.colorScheme == 'light'
+            ? theme.colors.gray[1]
+            : theme.colors.gray[8]
+        }`,
       })}>
+      <Text truncate size={10} mb={2}>
+        {dev}
+      </Text>
       {props.children}
     </Box>
   );
