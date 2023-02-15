@@ -1,40 +1,31 @@
-import {
-  MdAddCircleOutline,
-  MdCheck,
-  MdDelete,
-  MdEdit,
-  MdSave,
-} from 'react-icons/md';
+import { MdAddCircleOutline, MdDelete, MdEdit } from 'react-icons/md';
 import {
   ActionIcon,
   Text,
   Modal,
-  TextInput,
   Title,
   Tabs,
-  JsonInput,
   Group,
   Button,
-  Flex,
-  CopyButton,
+  Box,
 } from '@mantine/core';
 import { Screen } from '@/components/AppShell';
 import { createStyles } from '@mantine/core';
 import { ICONS, IService } from './define';
-import { useForm } from '@mantine/form';
 import { getUnique } from '@/lib/utils';
 import { ServiceModal } from './ServiceModal';
 import { useEffect, useState } from 'react';
 import { useLocalStorage, useMqttConfig } from '@/lib/hooks';
 import JsonEditer from './JsonEditer';
 import MqttConfig from './MqttConfig';
+import MqttUpdate from './MqttUpdate';
 
 type ModalData = { open: boolean; data?: IService };
 
 export default function Settings() {
   const [services, setServices] = useLocalStorage<IService[]>('services', []);
   const [modal, setModal] = useState<ModalData>({ open: false });
-  const { classes } = useStyles(); /* jss Styled classes */
+  const { classes, theme } = useStyles(); /* Styled classes */
 
   const setService = (service: IService) => {
     const _services =
@@ -54,7 +45,7 @@ export default function Settings() {
 
   return (
     <Screen className={classes.root}>
-      <Title order={4} align='center' color='green'>
+      <Title order={4} align='center' color={theme.primaryColor}>
         Device & Service Settings
       </Title>
       <MqttConfig />
@@ -63,13 +54,14 @@ export default function Settings() {
         <Tabs.List grow>
           <Tabs.Tab value='basic'>Basic</Tabs.Tab>
           <Tabs.Tab value='advance'>Advance</Tabs.Tab>
+          <Tabs.Tab value='update'>Update</Tabs.Tab>
         </Tabs.List>
 
         <Tabs.Panel value='basic'>
           {services.map((service, i) => {
             const Icon = ICONS[service.icon];
             return (
-              <div key={service.topic} className={classes.services}>
+              <Box key={service.topic} className={classes.services}>
                 <Icon size={24} />
                 <Text className={classes.serviceTopic}>{service.topic}</Text>
                 <ActionIcon
@@ -79,7 +71,7 @@ export default function Settings() {
                 <ActionIcon onClick={remService(i)}>
                   <MdDelete color='red' />
                 </ActionIcon>
-              </div>
+              </Box>
             );
           })}
           <Group position='center' pt='md'>
@@ -94,6 +86,10 @@ export default function Settings() {
 
         <Tabs.Panel value='advance'>
           <JsonEditer data={services} onSave={setServices} />
+        </Tabs.Panel>
+
+        <Tabs.Panel value='update'>
+          <MqttUpdate />
         </Tabs.Panel>
       </Tabs>
 
@@ -123,6 +119,7 @@ const useStyles = createStyles((theme) => ({
     alignItems: 'center',
     padding: theme.spacing.xs,
     boxShadow: theme.shadows.md,
+    borderRadius: theme.radius.sm,
   },
   serviceTopic: {
     flex: 1,

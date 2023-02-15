@@ -61,7 +61,9 @@ export function ServiceModal({ onSubmit, value }: ServiceModalPros) {
       />
 
       <Group position='center' my='md'>
-        <Button type='submit'>Save</Button>
+        <Button type='submit' variant='outline'>
+          Save
+        </Button>
       </Group>
     </form>
   );

@@ -5,6 +5,7 @@ import Containers from '@/components/Containers';
 import { Screen } from '@/components/AppShell';
 import { useSubscription } from '@/lib/mqtt';
 import { useEffect, useMemo } from 'react';
+import DarkMode from '@/components/DarkMode';
 
 export default function Services() {
   const { classes, theme } = useStyles();
@@ -21,7 +22,7 @@ export default function Services() {
 
   return (
     <Screen className={classes.root}>
-      <Flex justify='center' align='center' pos='sticky'>
+      <Flex justify='center' align='center' pos='sticky' py={2}>
         {mqtt.status != 'reconnecting' ? (
           <Image
             src='/images/brand.ico'
@@ -34,6 +35,7 @@ export default function Services() {
         <Title mx='xs' order={2} color={theme.primaryColor}>
           Jiot
         </Title>
+        <DarkMode />
       </Flex>
       <Containers.Grid p='xs'>
         {services.map((s) => {

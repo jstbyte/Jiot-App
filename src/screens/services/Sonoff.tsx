@@ -6,10 +6,10 @@ import {
   Center,
   Box,
 } from '@mantine/core';
-import { ICONS, ServiceProps } from '@/screens/settings/define';
-import Containers from '@/components/Containers';
-import { useSubscription } from '@/lib/mqtt';
 import { useEffect, useState } from 'react';
+import { useSubscription } from '@/lib/mqtt';
+import Containers from '@/components/Containers';
+import { ICONS, ServiceProps } from '@/screens/settings/define';
 
 type SonoffState = { name: string; state: boolean; busy: boolean };
 
@@ -103,13 +103,16 @@ export default function Sonoff({ service }: ServiceProps) {
 }
 
 const pulse = keyframes`from, 20%, 53%, 80%, to {scale: 1;}
-  40%, 43% {scale: 0.5;} 70% {scale: 0.9;} 90% {scale: 1;}`;
+  40%, 43% {scale: 0.7;} 70% {scale: 0.9;} 90% {scale: 1;}`;
 
 const useStyles = createStyles((theme) => ({
   pushButtonConatiner: {
+    padding: 4,
+    overflow: 'hidden',
     borderRadius: '100%',
-    padding: 2,
-    border: `1px solid ${theme.colors.gray[5]}`,
+    border: `1px solid ${
+      theme.colorScheme == 'light' ? theme.colors.gray[0] : theme.colors.gray[9]
+    }`,
   },
   pushButton: {
     borderRadius: '100%',

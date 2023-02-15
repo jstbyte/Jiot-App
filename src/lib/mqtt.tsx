@@ -1,15 +1,15 @@
 import { createContext, useCallback, useContext } from 'react';
 import { useEffect, useRef, useState, ReactNode } from 'react';
-import { connect as mqttConnect } from 'mqtt/dist/mqtt.min';
+import { OnMessageCallback, connect as mqttConnect } from 'mqtt/dist/mqtt.min';
 import type { MqttClient } from 'mqtt/dist/mqtt.min';
 import { matches } from 'mqtt-pattern';
 
 /* Types Declarations */
 type ConFunc = (url: string) => any;
-type Parser<T> = (payload: string) => T;
+type Subscribers = Map<string, OnMessageEvent>;
 type MqttProviderProps = { children: ReactNode };
-type MessageCallback = (topic: string, payload: any) => any;
-type Subscribers = Map<string, (topic: string, payload: any) => any>;
+const payloadParser = (payload: Buffer) => payload.toString();
+type OnMessageEvent = (topic: string, payload: Buffer) => any;
 type Mctx = { status: ConnStatus; client?: MqttClient; connect: ConFunc };
 type MqttCtx = Mctx & { subscribers: Subscribers }; // Use This Type only;
 type ConnStatus = 'offline' | 'connected' | 'disconnected' | 'reconnecting';
@@ -52,27 +52,24 @@ export function MqttProvider({ children }: MqttProviderProps) {
   );
 }
 
-export function useTopic<T = string>(topic: string, parser?: Parser<T>) {
-  const [message, setMessage] = useState<T | string>('');
-  const { subscribers } = useMqtt();
-
-  const callback = useCallback(
-    (_topic: string, _payload: any) => {
-      const payload = _payload.toString() as string;
-      setMessage(parser?.(payload) || payload);
-    },
+export function useTopic(topic: string, parser = payloadParser) {
+  const [msg, setMsg] = useState<ReturnType<typeof parser>>('');
+  const { subscribers } = useMqtt(); // Get Mqtt Subscribers;
+  const callback = useCallback<OnMessageEvent>(
+    (_, payload) => setMsg(parser(payload)),
     [topic, parser]
   );
 
   useEffect(() => {
+    setMsg('');
     subscribers.set(topic, callback);
     return () => subscribers.delete(topic) as any;
   }, [callback]);
 
-  return message;
+  return msg;
 }
 
-export function useSubscription(topic: string[], callback?: MessageCallback) {
+export function useSubscription(topic: string[], callback?: OnMessageEvent) {
   const mqtt = useMqtt(); // Get Global Mqtt Handle From MqttProvider Context;
 
   const callbackMemo = useCallback(
