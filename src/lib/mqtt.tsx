@@ -8,11 +8,13 @@ import { matches } from 'mqtt-pattern';
 type ConFunc = (url: string) => any;
 type Subscribers = Map<string, OnMessageEvent>;
 type MqttProviderProps = { children: ReactNode };
-const payloadParser = (payload: Buffer) => payload.toString();
 type OnMessageEvent = (topic: string, payload: Buffer) => any;
 type Mctx = { status: ConnStatus; client?: MqttClient; connect: ConFunc };
 type MqttCtx = Mctx & { subscribers: Subscribers }; // Use This Type only;
 type ConnStatus = 'offline' | 'connected' | 'disconnected' | 'reconnecting';
+function payloadParser<T = string>(payload: Buffer): T {
+  return payload.toString() as T; // Default Payload Parser will be toString;
+}
 
 const MqttContext = createContext<MqttCtx>({} as MqttCtx);
 export const useMqtt = () => useContext(MqttContext);
@@ -52,8 +54,8 @@ export function MqttProvider({ children }: MqttProviderProps) {
   );
 }
 
-export function useTopic(topic: string, parser = payloadParser) {
-  const [msg, setMsg] = useState<ReturnType<typeof parser>>('');
+export function useTopic<T = string>(topic: string, parser = payloadParser<T>) {
+  const [msg, setMsg] = useState<ReturnType<typeof parser>>(null as T);
   const { subscribers } = useMqtt(); // Get Mqtt Subscribers;
   const callback = useCallback<OnMessageEvent>(
     (_, payload) => setMsg(parser(payload)),
@@ -61,7 +63,7 @@ export function useTopic(topic: string, parser = payloadParser) {
   );
 
   useEffect(() => {
-    setMsg('');
+    setMsg(null as T);
     subscribers.set(topic, callback);
     return () => subscribers.delete(topic) as any;
   }, [callback]);

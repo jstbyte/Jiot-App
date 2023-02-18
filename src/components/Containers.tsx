@@ -27,6 +27,7 @@ function Service({ topic, ...props }: ServiceProps) {
     <Box
       {...props}
       sx={(theme) => ({
+        position: 'relative',
         boxSizing: 'border-box',
         boxShadow: theme.shadows.xs,
         borderRadius: theme.radius.sm,

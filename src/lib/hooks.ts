@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
+// Use Local Storage Hook;
 type Value<T> = [T, (value: T) => void]; // Initial Value Type;
 export function useLocalStorage<T>(key: string, def: T): Value<T> {
   const [value, setValue] = useState<T>(() => {
@@ -19,7 +20,40 @@ export function useLocalStorage<T>(key: string, def: T): Value<T> {
   return [value, setValue];
 }
 
-/*************************************************************************/
+// Long Press Detaction Hook
+export function useLongPress(callback = () => {}, ms = 300) {
+  const [startLongPress, setStartLongPress] = useState(false);
+  const timeoutRef = useRef<any>(null);
+
+  useEffect(() => {
+    const handleTouchStart = () => {
+      timeoutRef.current = setTimeout(() => {
+        callback();
+        setStartLongPress(false);
+      }, ms);
+      setStartLongPress(true);
+    };
+
+    const handleTouchEnd = () => {
+      clearTimeout(timeoutRef.current);
+      setStartLongPress(false);
+    };
+
+    const node = document.documentElement;
+
+    node.addEventListener('touchstart', handleTouchStart);
+    node.addEventListener('touchend', handleTouchEnd);
+
+    return () => {
+      node.removeEventListener('touchstart', handleTouchStart);
+      node.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [callback, ms]);
+
+  return startLongPress;
+}
+
+// LocalStorage Mqtt Config Hook;
 export type MqttConfig = { url: string; secrat: string };
 export const useMqttConfig = (key: string) => {
   return useLocalStorage<MqttConfig>(key, {
