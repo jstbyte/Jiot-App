@@ -6,14 +6,14 @@ import {
   Center,
   Box,
 } from '@mantine/core';
+import { useTopic } from '@/lib/mqtt';
 import { useEffect, useState } from 'react';
-import { useSubscription } from '@/lib/mqtt';
 import Containers from '@/components/Containers';
 import { ICONS, ServiceProps } from '@/screens/settings/define';
 
 type SonoffState = { name: string; state: boolean; busy: boolean };
-
 export default function Sonoff({ service }: ServiceProps) {
+  const [msg, _set, mqtt] = useTopic(service.topic, false);
   const [pins, setPins] = useState<SonoffState[]>(() =>
     service.data.split(';').map((name) => ({
       state: false,
@@ -22,10 +22,15 @@ export default function Sonoff({ service }: ServiceProps) {
     }))
   );
 
-  const mqtt = useSubscription([service.topic], (_, p: any) => {
+  useEffect(() => {
+    if (mqtt.status != 'connected') return;
+    mqtt.client?.publish(`${service.topic.replace('/res/', '/req/')}`, ``);
+  }, [mqtt.client, mqtt.status]);
+
+  useEffect(() => {
     setPins((_pins) => {
       const newPins = [..._pins]; // Copy Data;
-      (p.toString() as string).split(';').forEach((e) => {
+      (msg.toString() as string).split(';').forEach((e) => {
         const d = e.split(':');
         const index = parseInt(d[0]);
         if (index < pins.length) {
@@ -38,7 +43,7 @@ export default function Sonoff({ service }: ServiceProps) {
       });
       return newPins;
     });
-  });
+  }, [msg]);
 
   const handleChange = async (index: number) => {
     setPins((_pins) => {
@@ -52,11 +57,6 @@ export default function Sonoff({ service }: ServiceProps) {
       `${index}:3`
     );
   };
-
-  useEffect(() => {
-    if (mqtt.status != 'connected') return;
-    mqtt.client?.publish(`${service.topic.replace('/res/', '/req/')}`, ``);
-  }, [mqtt.client, mqtt.status]);
 
   const { classes, theme } = useStyles();
   return (
@@ -77,7 +77,8 @@ export default function Sonoff({ service }: ServiceProps) {
                       : pin.state
                       ? classes.iconOn
                       : classes.iconOff
-                  }>
+                  }
+                >
                   {pin.busy ? (
                     <Icon size={36} color='gray' className={classes.icon} />
                   ) : pin.state ? (

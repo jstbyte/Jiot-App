@@ -1,17 +1,19 @@
 import { useState, useEffect, useRef } from 'react';
 
+export function getLS<T = string>(key: string, def: T): T {
+  const item = window.localStorage.getItem(key);
+  try {
+    return item ? JSON.parse(item as string) : def;
+  } catch (error) {
+    console.debug(error);
+    return item as T;
+  }
+}
+
 // Use Local Storage Hook;
 type Value<T> = [T, (value: T) => void]; // Initial Value Type;
 export function useLocalStorage<T>(key: string, def: T): Value<T> {
-  const [value, setValue] = useState<T>(() => {
-    const item = window.localStorage.getItem(key);
-    try {
-      return item ? JSON.parse(item as string) : def;
-    } catch (error) {
-      console.debug(error);
-      return item;
-    }
-  });
+  const [value, setValue] = useState<T>(() => getLS(key, def));
 
   useEffect(() => {
     window.localStorage.setItem(key, JSON.stringify(value || ''));

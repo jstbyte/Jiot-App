@@ -6,12 +6,14 @@ import { Box, Button, Flex, TextInput, createStyles } from '@mantine/core';
 
 /* Test Component */
 export default function MqttUpdate() {
-  const mqtt = useMqtt();
   const { classes } = useStyles();
   const [config] = useMqttConfig('mqtt-config');
   const [device, setDevice] = useState<string>('');
   const [binary, setBinary] = useState<string>('');
-  const version = useTopic(`${config.secrat}/${device}/res/update`);
+  const [version, ___setVersion, mqtt] = useTopic(
+    `${config.secrat}/${device}/res/update`,
+    true
+  );
 
   const handleDevice = (e: any) => setDevice(e.target.value);
   const handleBinary = (e: any) => setBinary(e.target.value);
@@ -63,7 +65,8 @@ export default function MqttUpdate() {
               ) : (
                 <MdCloudDownload size={18} />
               )
-            }>
+            }
+          >
             {version ? version : 'Version'}
           </Button>
           <Button
@@ -71,7 +74,8 @@ export default function MqttUpdate() {
             variant='outline'
             onClick={handleUpdate}
             leftIcon={<MdUpdate size={18} />}
-            disabled={mqtt.status != 'connected' || !binary}>
+            disabled={mqtt.status != 'connected' || !binary}
+          >
             Update
           </Button>
         </Flex>

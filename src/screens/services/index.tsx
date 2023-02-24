@@ -1,24 +1,25 @@
-import { createStyles, Title, Image, Loader, Box, Flex } from '@mantine/core';
-import { useLocalStorage, useMqttConfig } from '@/lib/hooks';
-import { IService, SERVICE_STORE } from '../settings/define';
-import Containers from '@/components/Containers';
-import { Screen } from '@/components/AppShell';
-import { useSubscription } from '@/lib/mqtt';
+import { useMqtt } from '@/lib/mqtt';
 import { useEffect, useMemo } from 'react';
 import DarkMode from '@/components/DarkMode';
+import { Screen } from '@/components/AppShell';
+import Containers from '@/components/Containers';
+import { getLS, useMqttConfig } from '@/lib/hooks';
+import { IService, SERVICE_STORE } from '../settings/define';
+import { createStyles, Title, Image, Loader, Flex } from '@mantine/core';
+
+function getServices(secrat: string) {
+  return getLS<IService[]>('services', []).map((service) => ({
+    ...service,
+    topic: `${secrat}/${service.topic}`,
+  }));
+}
 
 export default function Services() {
   const { classes, theme } = useStyles();
   const [config] = useMqttConfig('mqtt-config');
-  const [_services] = useLocalStorage<IService[]>('services', []);
-  const mqtt = useSubscription([`${config.secrat}/+/req/sonoff`]);
+  const mqtt = useMqtt([`${config.secrat}/+/res/sonoff`]);
   useEffect(() => mqtt.connect(`wss://${config.url}`), []);
-  const services = useMemo(() => {
-    return _services.map((service) => ({
-      ...service,
-      topic: `${config.secrat}/${service.topic}`,
-    }));
-  }, [_services]);
+  const services = useMemo(() => getServices(config.secrat), []);
 
   return (
     <Screen className={classes.root}>
