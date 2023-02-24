@@ -6,10 +6,26 @@ import {
   Center,
   Box,
 } from '@mantine/core';
-import { useTopic } from '@/lib/mqtt';
+import { res2req, useTopic } from '@/lib/mqtt';
 import { useEffect, useState } from 'react';
 import Containers from '@/components/Containers';
 import { ICONS, ServiceProps } from '@/screens/settings/define';
+
+function parsePins(pins: SonoffState[], msg: string) {
+  const newPins = [...pins]; // Copy Data;
+  (msg.toString() as string).split(';').forEach((e) => {
+    const d = e.split(':');
+    const index = parseInt(d[0]);
+    if (index < pins.length) {
+      newPins[index] = {
+        ...newPins[index],
+        state: d[1] == '0' ? true : false,
+        busy: false,
+      };
+    }
+  });
+  return newPins;
+}
 
 type SonoffState = { name: string; state: boolean; busy: boolean };
 export default function Sonoff({ service }: ServiceProps) {
@@ -21,29 +37,12 @@ export default function Sonoff({ service }: ServiceProps) {
       name,
     }))
   );
+  useEffect(() => setPins((_pins) => parsePins(pins, msg)), [msg]);
 
   useEffect(() => {
     if (mqtt.status != 'connected') return;
-    mqtt.client?.publish(`${service.topic.replace('/res/', '/req/')}`, ``);
+    mqtt.client?.publish(res2req(service.topic), ``);
   }, [mqtt.client, mqtt.status]);
-
-  useEffect(() => {
-    setPins((_pins) => {
-      const newPins = [..._pins]; // Copy Data;
-      (msg.toString() as string).split(';').forEach((e) => {
-        const d = e.split(':');
-        const index = parseInt(d[0]);
-        if (index < pins.length) {
-          newPins[index] = {
-            ...newPins[index],
-            state: d[1] == '0' ? true : false,
-            busy: false,
-          };
-        }
-      });
-      return newPins;
-    });
-  }, [msg]);
 
   const handleChange = async (index: number) => {
     setPins((_pins) => {
@@ -52,10 +51,7 @@ export default function Sonoff({ service }: ServiceProps) {
       return newPins;
     });
 
-    mqtt.client?.publish(
-      `${service.topic.replace('/res/', '/req/')}`,
-      `${index}:3`
-    );
+    mqtt.client?.publish(res2req(service.topic), `${index}:3`);
   };
 
   const { classes, theme } = useStyles();

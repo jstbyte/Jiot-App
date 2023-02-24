@@ -9,6 +9,7 @@ type ConFunc = (url: string) => any;
 type Subscribers = Map<string, OnMessageEvent>;
 type MqttProviderProps = { children: ReactNode };
 type OnMessageEvent = (topic: string, payload: Buffer) => any;
+export const res2req = (t: string) => t.replace('/res/', '/req/');
 type Mctx = { status: ConnStatus; client?: MqttClient; connect: ConFunc };
 type MqttCtx = Mctx & { subscribers: Subscribers }; // Use This Type only;
 type ConnStatus = 'offline' | 'connected' | 'disconnected' | 'reconnecting';
