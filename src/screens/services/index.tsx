@@ -33,18 +33,20 @@ export default function Services() {
   return (
     <Screen className={classes.root}>
       <Flex className={classes.head}>
-        {mqtt.status != 'reconnecting' ? (
-          <Image
-            src='/images/brand.ico'
-            width={28}
-            opacity={mqtt.status == 'connected' ? 1 : 0.5}
-          />
-        ) : (
-          <Loader size={28} />
-        )}
-        <Title mx='xs' order={2} color={theme.primaryColor}>
-          Jiot
-        </Title>
+        <Flex style={{ flex: 0.4, justifyContent: 'end' }}>
+          {mqtt.status != 'reconnecting' ? (
+            <Image
+              src='/images/brand.ico'
+              width={28}
+              opacity={mqtt.status == 'connected' ? 1 : 0.5}
+            />
+          ) : (
+            <Loader size={28} />
+          )}
+          <Title mx='xs' order={2} color={theme.primaryColor}>
+            Jiot
+          </Title>
+        </Flex>
         <Power />
       </Flex>
 

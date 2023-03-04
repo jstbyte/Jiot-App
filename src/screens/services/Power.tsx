@@ -17,16 +17,20 @@ function formatSeconds(seconds: number): string {
 export default function Power() {
   const [config] = useMqttConfig('mqtt-config');
   const [state, setState] = useState({ state: false, time: 0 });
-  const [msg, _set, mqtt] = useTopic(`${config.secrat}/*/power`, true);
+  const [msg, _set, mqtt] = useTopic(`${config.secrat}/*/res/power`, true);
+
+  useEffect(() => {
+    if (mqtt.status != 'connected') return;
+    mqtt.client?.publish(`${config.secrat}/*/req/power`, '');
+  }, [mqtt.client, mqtt.status]);
 
   useEffect(() => {
     if (msg == '') return;
-
-    const data = msg.split(':');
-    const _time = Math.floor(Date.now() / 1000) - parseInt(data[1]);
+    const epoch = Math.abs(parseInt(msg));
+    const _time = Math.floor(Date.now() / 1000) - epoch;
 
     setState({
-      state: data[0] == '0' ? false : true,
+      state: msg.startsWith('-') ? false : true,
       time: _time == 0 ? 1 : _time,
     });
 
@@ -38,7 +42,7 @@ export default function Power() {
   }, [msg]);
 
   return (
-    <Flex h={28} align='center' gap='xs' style={{ flex: 0.5 }}>
+    <Flex h={28} align='center' gap='xs' style={{ flex: 0.6 }}>
       {state.time == 0 ? (
         <Loader size='sm' variant='dots' />
       ) : (
