@@ -5,7 +5,16 @@ import { Screen } from '@/components/AppShell';
 import Containers from '@/components/Containers';
 import { getLS, useMqttConfig } from '@/lib/hooks';
 import { IService, SERVICE_STORE } from '../settings/define';
-import { createStyles, Title, Image, Loader, Flex } from '@mantine/core';
+import {
+  createStyles,
+  Title,
+  Image,
+  Loader,
+  Flex,
+  Center,
+  Box,
+} from '@mantine/core';
+import Power from './Power';
 
 function getServices(secrat: string) {
   return getLS<IService[]>('services', []).map((service) => ({
@@ -23,7 +32,7 @@ export default function Services() {
 
   return (
     <Screen className={classes.root}>
-      <Flex justify='center' align='center' pos='sticky' py={2}>
+      <Flex className={classes.head}>
         {mqtt.status != 'reconnecting' ? (
           <Image
             src='/images/brand.ico'
@@ -36,9 +45,10 @@ export default function Services() {
         <Title mx='xs' order={2} color={theme.primaryColor}>
           Jiot
         </Title>
-        <DarkMode />
+        <Power />
       </Flex>
-      <Containers.Grid p='xs'>
+
+      <Containers.Grid className={classes.services}>
         {services.map((s) => {
           const Comp = SERVICE_STORE[s.name];
           return <Comp key={s.topic} service={s} />;
@@ -52,12 +62,25 @@ const useStyles = createStyles((theme) => ({
   root: {
     display: 'flex',
     alignItems: 'stretch',
-    gap: theme.spacing.xs,
     flexDirection: 'column',
+  },
+  head: {
+    boxShadow: '0 0 5px gray',
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'sticky',
+    height: `3rem`,
+    width: 'full',
+    padding: 2,
   },
   loaderContainer: {
     paddingTop: theme.spacing.xl * 3,
     display: 'flex',
     justifyContent: 'center',
+  },
+  services: {
+    maxHeight: 'calc(100vh - 6rem)',
+    padding: theme.spacing.xs,
+    overflowY: 'auto',
   },
 }));

@@ -8,6 +8,7 @@ import {
   Group,
   Button,
   Box,
+  Center,
 } from '@mantine/core';
 import { Screen } from '@/components/AppShell';
 import { createStyles } from '@mantine/core';
@@ -19,6 +20,7 @@ import { useLocalStorage, useMqttConfig } from '@/lib/hooks';
 import JsonEditer from './JsonEditer';
 import MqttConfig from './MqttConfig';
 import MqttUpdate from './MqttUpdate';
+import DarkMode from '@/components/DarkMode';
 
 type ModalData = { open: boolean; data?: IService };
 
@@ -48,6 +50,9 @@ export default function Settings() {
       <Title order={4} align='center' color={theme.primaryColor}>
         Device & Service Settings
       </Title>
+      <Center>
+        <DarkMode />
+      </Center>
       <MqttConfig />
 
       <Tabs defaultValue='basic' keepMounted={false}>
@@ -65,7 +70,8 @@ export default function Settings() {
                 <Icon size={24} />
                 <Text className={classes.serviceTopic}>{service.topic}</Text>
                 <ActionIcon
-                  onClick={() => setModal({ open: true, data: service })}>
+                  onClick={() => setModal({ open: true, data: service })}
+                >
                   <MdEdit color='yellow' />
                 </ActionIcon>
                 <ActionIcon onClick={remService(i)}>
@@ -78,7 +84,8 @@ export default function Settings() {
             <Button
               leftIcon={<MdAddCircleOutline size={24} />}
               onClick={() => setModal({ open: true })}
-              variant='outline'>
+              variant='outline'
+            >
               Add
             </Button>
           </Group>
@@ -96,7 +103,8 @@ export default function Settings() {
       <Modal
         opened={modal.open}
         onClose={() => setModal({ open: false })}
-        title='Service Setup'>
+        title='Service Setup'
+      >
         <ServiceModal onSubmit={setService} value={modal.data} />
       </Modal>
     </Screen>

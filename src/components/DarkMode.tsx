@@ -10,7 +10,8 @@ export default function DarkMode() {
       variant='subtle'
       color={dark ? 'yellow' : 'blue'}
       onClick={() => toggleColorScheme()}
-      title='Toggle color scheme'>
+      title='Toggle color scheme'
+    >
       {dark ? <IoMdSunny size={28} /> : <IoMdMoon size={28} />}
     </ActionIcon>
   );
