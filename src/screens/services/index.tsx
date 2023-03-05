@@ -15,6 +15,7 @@ import {
   Box,
 } from '@mantine/core';
 import Power from './Power';
+import Empty from './Empty';
 
 function getServices(secrat: string) {
   return getLS<IService[]>('services', []).map((service) => ({
@@ -49,6 +50,8 @@ export default function Services() {
         </Flex>
         <Power />
       </Flex>
+
+      {!services.length && <Empty />}
 
       <Containers.Grid className={classes.services}>
         {services.map((s) => {
