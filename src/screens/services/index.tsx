@@ -33,7 +33,7 @@ export default function Services() {
   return (
     <Screen className={classes.root}>
       <Flex className={classes.head}>
-        <Flex style={{ flex: 0.4, justifyContent: 'end' }}>
+        <Flex className={classes.header}>
           {mqtt.status != 'reconnecting' ? (
             <Image
               src='/images/brand.ico'
@@ -74,6 +74,11 @@ const useStyles = createStyles((theme) => ({
     height: `3rem`,
     width: 'full',
     padding: 2,
+  },
+  header: {
+    justifyContent: 'end',
+    alignItems: 'center',
+    flex: 0.4,
   },
   loaderContainer: {
     paddingTop: theme.spacing.xl * 3,
