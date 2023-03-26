@@ -63,7 +63,7 @@ export function useMqtt(topics: string[] = []) {
 }
 
 type iUT = [string, Dispatch<SetStateAction<string>>, MqttCtx];
-export function useTopic(topic: string, sub = false): iUT {
+export function useTopic(topic: string, sub = false, req = ''): iUT {
   const mqtt = useMqtt(sub ? [topic] : []);
   const [msg, setMsg] = useState('');
 
@@ -72,6 +72,12 @@ export function useTopic(topic: string, sub = false): iUT {
     mqtt.subscribers.set(topic, cb); // Subscribes;
     return () => mqtt.subscribers.delete(topic);
   }, [topic]);
+
+  useEffect(() => {
+    if (!req) return; // Not Required!
+    if (mqtt.status != 'connected') return;
+    mqtt.client?.publish(req, ``);
+  }, [mqtt.client, mqtt.status]);
 
   return [msg, setMsg, mqtt];
 }

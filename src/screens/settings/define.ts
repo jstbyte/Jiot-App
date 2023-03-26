@@ -2,8 +2,9 @@ import { MdOutlinePowerSettingsNew } from 'react-icons/md';
 import Sonoff from '@/screens/services/Sonoff';
 import { IoMdBulb } from 'react-icons/io';
 import { FaFan } from 'react-icons/fa';
+import Door from '../services/Door';
 
-export const SERVICES = ['SONOFF'] as const;
+export const SERVICES = ['SONOFF', 'DOOR'] as const;
 
 export const ICONS = Object.freeze({
   FAN: FaFan,
@@ -13,6 +14,7 @@ export const ICONS = Object.freeze({
 
 export const SERVICE_STORE: ServiceStore = {
   SONOFF: Sonoff,
+  DOOR: Door,
 };
 
 /* Type Defications */

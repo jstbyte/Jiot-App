@@ -28,21 +28,17 @@ function parsePins(pins: SonoffState[], msg: string) {
 }
 
 type SonoffState = { name: string; state: boolean; busy: boolean };
-export default function Sonoff({ service }: ServiceProps) {
-  const [msg, _set, mqtt] = useTopic(service.topic, false);
+export default function Sonoff({ service: s }: ServiceProps) {
+  const [msg, _set, mqtt] = useTopic(s.topic, false, res2req(s.topic));
   const [pins, setPins] = useState<SonoffState[]>(() =>
-    service.data.split(';').map((name) => ({
+    s.data.split(';').map((name) => ({
       state: false,
       busy: true,
       name,
     }))
   );
-  useEffect(() => setPins((_pins) => parsePins(pins, msg)), [msg]);
 
-  useEffect(() => {
-    if (mqtt.status != 'connected') return;
-    mqtt.client?.publish(res2req(service.topic), ``);
-  }, [mqtt.client, mqtt.status]);
+  useEffect(() => setPins((_pins) => parsePins(pins, msg)), [msg]);
 
   const handleChange = async (index: number) => {
     setPins((_pins) => {
@@ -51,16 +47,16 @@ export default function Sonoff({ service }: ServiceProps) {
       return newPins;
     });
 
-    mqtt.client?.publish(res2req(service.topic), `${index}:3`);
+    mqtt.client?.publish(res2req(s.topic), `${index}:3`);
   };
 
   const { classes, theme } = useStyles();
   return (
     <>
       {pins.map((pin, i) => {
-        const Icon = ICONS[service.icon];
+        const Icon = ICONS[s.icon];
         return (
-          <Containers.Col key={pin.name + i} topic={service.topic}>
+          <Containers.Col key={pin.name + i} topic={s.topic}>
             <Center>
               <Box className={classes.pushButtonConatiner}>
                 <ActionIcon
