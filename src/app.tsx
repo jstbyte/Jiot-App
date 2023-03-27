@@ -6,6 +6,7 @@ import { Route } from '@/components/Router';
 import { MqttProvider } from '@/lib/mqtt';
 import Settings from '@/screens/settings';
 import Services from '@/screens/services';
+import Tarminal from './screens/tarminal';
 
 export default function App() {
   return (
@@ -13,6 +14,7 @@ export default function App() {
       <Body>
         <Route path='/' component={<Services />} />
         <Route path='/settings' component={<Settings />} />
+        <Route path='/tarminal' component={<Tarminal />} />
       </Body>
 
       <NavBar>

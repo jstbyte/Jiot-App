@@ -1,6 +1,8 @@
-import { Button, Group, JsonInput } from '@mantine/core';
 import { useState } from 'react';
 import { IService } from './define';
+import { MdScience } from 'react-icons/md';
+import { Link } from '@/components/NavLink';
+import { ActionIcon, Button, Center, Group, JsonInput } from '@mantine/core';
 
 interface JsonEditerProps {
   onSave: (value: IService[]) => any;
@@ -27,6 +29,14 @@ export default function JsonEditer({ data, onSave }: JsonEditerProps) {
           Save Config
         </Button>
       </Group>
+
+      <Center mt='xl'>
+        <Link href='/tarminal'>
+          <ActionIcon size='xl'>
+            <MdScience size={32} color='red' />
+          </ActionIcon>
+        </Link>
+      </Center>
     </>
   );
 }

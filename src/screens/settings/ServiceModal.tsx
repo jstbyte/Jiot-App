@@ -6,12 +6,11 @@ import {
   Textarea,
   Text,
 } from '@mantine/core';
-import { IService, SERVICES, ICONS } from './define';
 import { useForm } from '@mantine/form';
+import { IService, SERVICES, ICONS, SERVICE_STORE } from './define';
 
 type ServiceModalPros = { onSubmit: (arg: IService) => any; value?: IService };
 export function ServiceModal({ onSubmit, value }: ServiceModalPros) {
-  const handleSubmit = (v: IService) => onSubmit(v);
   const form = useForm<IService>({
     initialValues: value || {
       name: 'SONOFF',
@@ -20,6 +19,14 @@ export function ServiceModal({ onSubmit, value }: ServiceModalPros) {
       data: '',
     },
   });
+
+  const handleSubmit = (v: IService) => {
+    const topic = !value?.topic
+      ? `${v.topic}/res/${SERVICE_STORE[v.name].topic}`
+      : v.topic;
+
+    onSubmit({ ...v, topic });
+  };
 
   return (
     <form onSubmit={form.onSubmit(handleSubmit)}>
@@ -30,16 +37,17 @@ export function ServiceModal({ onSubmit, value }: ServiceModalPros) {
       ) : (
         <TextInput
           required
-          label='Topic'
-          {...form.getInputProps('topic')}
-          placeholder='Enter a unique topic'
+          label='Device Name'
           disabled={!!value?.topic}
+          {...form.getInputProps('topic')}
+          placeholder='Device name, no space or spacial chars.'
         />
       )}
       <Select
         required
         data={[...SERVICES]}
-        label='Name'
+        label='Service Type'
+        disabled={!!value?.name}
         placeholder='Please Select One'
         {...form.getInputProps('name')}
       />

@@ -52,7 +52,7 @@ export default function Services() {
       <Containers.Grid className={classes.services}>
         {services.map((s) => {
           const Comp = SERVICE_STORE[s.name];
-          return <Comp key={s.topic} service={s} />;
+          return <Comp.view key={s.topic} service={s} />;
         })}
       </Containers.Grid>
     </Screen>

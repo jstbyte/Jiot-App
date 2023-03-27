@@ -68,6 +68,7 @@ export function useTopic(topic: string, sub = false, req = ''): iUT {
   const [msg, setMsg] = useState('');
 
   useEffect((): any => {
+    if (!topic) return; // Don't Subscribe if empty;
     const cb = (_: any, p: Buffer) => setMsg(p.toString());
     mqtt.subscribers.set(topic, cb); // Subscribes;
     return () => mqtt.subscribers.delete(topic);

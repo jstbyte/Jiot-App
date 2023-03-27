@@ -1,5 +1,4 @@
 import { useTopic } from '@/lib/mqtt';
-import { ImPower } from 'react-icons/im';
 import { useEffect, useState } from 'react';
 import { useMqttConfig } from '@/lib/hooks';
 import { MdBatteryUnknown } from 'react-icons/md';
@@ -18,11 +17,6 @@ export default function Power() {
   const [config] = useMqttConfig('mqtt-config');
   const [state, setState] = useState({ state: false, time: 0 });
   const [msg, _set, mqtt] = useTopic(`${config.secrat}/*/res/power`, true);
-
-  // useEffect(() => {
-  //   if (mqtt.status != 'connected') return;
-  //   mqtt.client?.publish(`${config.secrat}/*/req/power`, '');
-  // }, [mqtt.client, mqtt.status]);
 
   useEffect(() => {
     if (msg == '') return;
