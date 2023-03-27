@@ -77,7 +77,7 @@ export function useTopic(topic: string, sub = false, req = ''): iUT {
     if (!req) return; // Not Required!
     if (mqtt.status != 'connected') return;
     mqtt.client?.publish(req, ``);
-  }, [mqtt.client, mqtt.status]);
+  }, [mqtt.client, mqtt.status, req]);
 
   return [msg, setMsg, mqtt];
 }

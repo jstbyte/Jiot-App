@@ -29,7 +29,7 @@ function parsePins(pins: SonoffState[], msg: string) {
 
 type SonoffState = { name: string; state: boolean; busy: boolean };
 export default function Sonoff({ service: s }: ServiceProps) {
-  const [msg, _set, mqtt] = useTopic(s.topic, false, res2req(s.topic));
+  const [msg, _set, mqtt] = useTopic(s.topic, false);
   const [pins, setPins] = useState<SonoffState[]>(() =>
     s.data.split(';').map((name) => ({
       state: false,

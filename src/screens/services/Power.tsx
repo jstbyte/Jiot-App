@@ -19,10 +19,10 @@ export default function Power() {
   const [state, setState] = useState({ state: false, time: 0 });
   const [msg, _set, mqtt] = useTopic(`${config.secrat}/*/res/power`, true);
 
-  useEffect(() => {
-    if (mqtt.status != 'connected') return;
-    mqtt.client?.publish(`${config.secrat}/*/req/power`, '');
-  }, [mqtt.client, mqtt.status]);
+  // useEffect(() => {
+  //   if (mqtt.status != 'connected') return;
+  //   mqtt.client?.publish(`${config.secrat}/*/req/power`, '');
+  // }, [mqtt.client, mqtt.status]);
 
   useEffect(() => {
     if (msg == '') return;

@@ -1,19 +1,10 @@
 import { useMqtt } from '@/lib/mqtt';
 import { useEffect, useMemo } from 'react';
-import DarkMode from '@/components/DarkMode';
 import { Screen } from '@/components/AppShell';
 import Containers from '@/components/Containers';
 import { getLS, useMqttConfig } from '@/lib/hooks';
 import { IService, SERVICE_STORE } from '../settings/define';
-import {
-  createStyles,
-  Title,
-  Image,
-  Loader,
-  Flex,
-  Center,
-  Box,
-} from '@mantine/core';
+import { createStyles, Title, Image, Loader, Flex } from '@mantine/core';
 import Power from './Power';
 import Empty from './Empty';
 
@@ -30,6 +21,11 @@ export default function Services() {
   const mqtt = useMqtt([`${config.secrat}/+/res/sonoff`]);
   useEffect(() => mqtt.connect(`wss://${config.url}`), []);
   const services = useMemo(() => getServices(config.secrat), []);
+
+  useEffect(() => {
+    if (mqtt.status != 'connected') return;
+    mqtt.client?.publish(`${config.secrat}/*/req/info`, '');
+  }, [mqtt.client, mqtt.status]);
 
   return (
     <Screen className={classes.root}>

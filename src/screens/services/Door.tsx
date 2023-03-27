@@ -6,7 +6,7 @@ import { FaLock, FaUnlock, FaInfoCircle } from 'react-icons/fa';
 import { Box, Button, Center, Loader } from '@mantine/core';
 
 export default function Door({ service: s }: ServiceProps) {
-  const [msg, _set, mqtt] = useTopic(s.topic, true, res2req(s.topic));
+  const [msg, _set, mqtt] = useTopic(s.topic, true);
   const [option] = useState(() => {
     try {
       const params = s.data.split(':');
